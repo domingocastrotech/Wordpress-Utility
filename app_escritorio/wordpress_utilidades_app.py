@@ -24,7 +24,7 @@ from typing import Callable
 # ──────────────────────────────────────────────────────────────────────────────
 #  VERSIÓN Y ACTUALIZACIÓN AUTOMÁTICA
 # ──────────────────────────────────────────────────────────────────────────────
-APP_VERSION = "1.1.0"  # <-- actualiza este valor en cada release
+APP_VERSION = "1.1.1"  # <-- actualiza este valor en cada release
 
 # URL pública donde publicas tu version.json (GitHub raw, servidor propio, etc.)
 # Ejemplo GitHub: "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/version.json"
@@ -139,6 +139,7 @@ $newFile = '{_ps_quote(new_file_path)}'
 $currentFile = '{_ps_quote(current_file_path)}'
 $restartExe = '{_ps_quote(restart_exe)}'
 $restartArgs = @({restart_args_ps})
+$selfScript = $MyInvocation.MyCommand.Path
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
@@ -146,7 +147,7 @@ Add-Type -AssemblyName System.Drawing
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = 'Actualizando WordPress Utilidades'
-$form.Size = New-Object System.Drawing.Size(460, 170)
+$form.Size = New-Object System.Drawing.Size(500, 220)
 $form.StartPosition = 'CenterScreen'
 $form.TopMost = $true
 $form.FormBorderStyle = 'FixedDialog'
@@ -155,7 +156,7 @@ $form.MinimizeBox = $false
 
 $label = New-Object System.Windows.Forms.Label
 $label.AutoSize = $false
-$label.Size = New-Object System.Drawing.Size(420, 34)
+$label.Size = New-Object System.Drawing.Size(460, 34)
 $label.Location = New-Object System.Drawing.Point(18, 14)
 $label.Text = 'Preparando actualización...'
 $label.Font = New-Object System.Drawing.Font('Segoe UI', 10)
@@ -163,7 +164,7 @@ $form.Controls.Add($label)
 
 $bar = New-Object System.Windows.Forms.ProgressBar
 $bar.Location = New-Object System.Drawing.Point(18, 64)
-$bar.Size = New-Object System.Drawing.Size(420, 22)
+$bar.Size = New-Object System.Drawing.Size(460, 22)
 $bar.Minimum = 0
 $bar.Maximum = 100
 $bar.Style = 'Continuous'
@@ -171,11 +172,27 @@ $form.Controls.Add($bar)
 
 $pct = New-Object System.Windows.Forms.Label
 $pct.AutoSize = $false
-$pct.Size = New-Object System.Drawing.Size(420, 24)
+$pct.Size = New-Object System.Drawing.Size(460, 24)
 $pct.Location = New-Object System.Drawing.Point(18, 96)
 $pct.Text = '0%'
 $pct.Font = New-Object System.Drawing.Font('Segoe UI', 9)
 $form.Controls.Add($pct)
+
+$launchBtn = New-Object System.Windows.Forms.Button
+$launchBtn.Size = New-Object System.Drawing.Size(160, 30)
+$launchBtn.Location = New-Object System.Drawing.Point(318, 136)
+$launchBtn.Text = 'Lanzar aplicación'
+$launchBtn.Enabled = $false
+$launchBtn.Font = New-Object System.Drawing.Font('Segoe UI', 9)
+$form.Controls.Add($launchBtn)
+
+$closeBtn = New-Object System.Windows.Forms.Button
+$closeBtn.Size = New-Object System.Drawing.Size(120, 30)
+$closeBtn.Location = New-Object System.Drawing.Point(18, 136)
+$closeBtn.Text = 'Cerrar'
+$closeBtn.Font = New-Object System.Drawing.Font('Segoe UI', 9)
+$closeBtn.Add_Click({{ $form.Close() }})
+$form.Controls.Add($closeBtn)
 
 function Set-Ui([int]$value, [string]$text) {{
     if ($value -lt 0) {{ $value = 0 }}
@@ -211,23 +228,26 @@ for ($i = 1; $i -le 80; $i++) {{
     Start-Sleep -Milliseconds 250
 }}
 
-    if ($copied) {{
-    Set-Ui 95 'Reiniciando aplicación...'
-    # Limpiar carpetas temporales de PyInstaller del proceso anterior
+if ($copied) {{
+    Set-Ui 95 'Limpiando temporales...'
     $tempDir = [System.IO.Path]::GetTempPath()
     Get-ChildItem -Path $tempDir -Directory -Filter '_MEI*' -ErrorAction SilentlyContinue | ForEach-Object {{
         Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
     }}
-    Start-Sleep -Milliseconds 800
-    if ($restartArgs.Count -gt 0) {{
-        Start-Process -FilePath $restartExe -ArgumentList $restartArgs | Out-Null
-    }} else {{
-        Start-Process -FilePath $restartExe | Out-Null
-    }}
-
-    Set-Ui 100 'Actualización completada'
-    Start-Sleep -Milliseconds 700
     Remove-Item -LiteralPath $newFile -Force -ErrorAction SilentlyContinue
+
+    Set-Ui 100 'Instalación finalizada. Pulsa "Lanzar aplicación".'
+    $launchBtn.Enabled = $true
+    $launchBtn.Add_Click({{
+        try {{
+            if ($restartArgs.Count -gt 0) {{
+                Start-Process -FilePath $restartExe -ArgumentList $restartArgs | Out-Null
+            }} else {{
+                Start-Process -FilePath $restartExe | Out-Null
+            }}
+        }} catch {{}}
+        $form.Close()
+    }})
 }} else {{
     [System.Windows.Forms.MessageBox]::Show(
         'No se pudo reemplazar el archivo porque sigue en uso. Cierra la app y vuelve a intentar.',
@@ -237,12 +257,16 @@ for ($i = 1; $i -le 80; $i++) {{
     ) | Out-Null
 }}
 
-$form.Close()
+[void]$form.ShowDialog()
+
+# Limpieza del propio script temporal del updater
+Start-Process -FilePath 'cmd.exe' -ArgumentList '/c', "ping 127.0.0.1 -n 2 >nul & del /f /q \"$selfScript\"" -WindowStyle Hidden | Out-Null
 """.strip()
 
     fd, ps1_path = tempfile.mkstemp(prefix="wpu_update_", suffix=".ps1")
     try:
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
+        # UTF-8 con BOM para que PowerShell en Windows respete acentos.
+        with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
             f.write(ps_script)
     except Exception:
         try:
