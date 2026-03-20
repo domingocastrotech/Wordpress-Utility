@@ -211,8 +211,14 @@ for ($i = 1; $i -le 80; $i++) {{
     Start-Sleep -Milliseconds 250
 }}
 
-if ($copied) {{
+    if ($copied) {{
     Set-Ui 95 'Reiniciando aplicación...'
+    # Limpiar carpetas temporales de PyInstaller del proceso anterior
+    $tempDir = [System.IO.Path]::GetTempPath()
+    Get-ChildItem -Path $tempDir -Directory -Filter '_MEI*' -ErrorAction SilentlyContinue | ForEach-Object {{
+        Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+    }}
+    Start-Sleep -Milliseconds 800
     if ($restartArgs.Count -gt 0) {{
         Start-Process -FilePath $restartExe -ArgumentList $restartArgs | Out-Null
     }} else {{
