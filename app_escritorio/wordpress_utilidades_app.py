@@ -257,7 +257,10 @@ if ($copied) {{
     ) | Out-Null
 }}
 
-[void]$form.ShowDialog()
+while ($form.Visible) {{
+    [System.Windows.Forms.Application]::DoEvents()
+    Start-Sleep -Milliseconds 100
+}}
 
 # Limpieza del propio script temporal del updater
 Start-Process -FilePath 'cmd.exe' -ArgumentList '/c', "ping 127.0.0.1 -n 2 >nul & del /f /q \"$selfScript\"" -WindowStyle Hidden | Out-Null
