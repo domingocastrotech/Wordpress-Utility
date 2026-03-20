@@ -16,6 +16,7 @@ import tkinter as tk
 import unicodedata
 import urllib.error
 import urllib.request
+import urllib.parse
 from datetime import datetime
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from typing import Callable
@@ -33,7 +34,45 @@ APP_VERSION = "1.0.1"  # <-- actualiza este valor en cada release
 #   "download_url": "https://github.com/TU_USUARIO/TU_REPO/releases/download/v1.1.0/wordpress_utilidades_app.py",
 #   "notes": "Descripción de los cambios"
 # }
-_UPDATE_CHECK_URL = "https://github.com/domingocastrotech/Wordpress-Utility.git/main/version.json"
+_UPDATE_CHECK_URLS = [
+    "https://raw.githubusercontent.com/domingocastrotech/Wordpress-Utility/main/version.json",
+    "https://raw.githubusercontent.com/domingocastrotech/Wordpress-Utility/main/app_escritorio/version.json",
+    "https://raw.githubusercontent.com/domingocastrotech/Wordpress-Utility/master/version.json",
+    "https://raw.githubusercontent.com/domingocastrotech/Wordpress-Utility/master/app_escritorio/version.json",
+]
+
+
+def _is_frozen_app() -> bool:
+    return bool(getattr(sys, "frozen", False))
+
+
+def _current_install_target() -> str:
+    """Ruta del archivo que debe reemplazarse al actualizar (.exe o .py)."""
+    if _is_frozen_app():
+        return os.path.abspath(sys.executable)
+    return os.path.abspath(__file__)
+
+
+def _restart_command_for_target(target_path: str) -> list[str]:
+    """Comando para relanzar la app tras aplicar la actualización."""
+    if _is_frozen_app():
+        return [target_path]
+    return [sys.executable, target_path]
+
+
+def _select_download_url(update_info: dict) -> str:
+    """Elige la URL de descarga adecuada según el modo de ejecución."""
+    if _is_frozen_app():
+        return (
+            update_info.get("download_url_exe")
+            or update_info.get("download_url")
+            or ""
+        )
+    return (
+        update_info.get("download_url_py")
+        or update_info.get("download_url")
+        or ""
+    )
 
 
 def _parse_version(v: str) -> tuple[int, ...]:
@@ -47,12 +86,23 @@ def _parse_version(v: str) -> tuple[int, ...]:
 def _check_for_updates_worker(current_version: str, callback: "Callable[[dict], None]") -> None:
     """Hilo secundario: consulta la URL de versión y dispara callback si hay novedad."""
     try:
-        req = urllib.request.Request(
-            _UPDATE_CHECK_URL,
-            headers={"User-Agent": f"WPUtilidades-UpdateChecker/{current_version}"},
-        )
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
+        data: dict | None = None
+        for check_url in _UPDATE_CHECK_URLS:
+            try:
+                req = urllib.request.Request(
+                    check_url,
+                    headers={"User-Agent": f"WPUtilidades-UpdateChecker/{current_version}"},
+                )
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                if isinstance(data, dict):
+                    break
+            except Exception:
+                continue
+
+        if not data:
+            return
+
         remote_ver = data.get("version", "")
         if _parse_version(remote_ver) > _parse_version(current_version):
             callback(data)
@@ -60,14 +110,22 @@ def _check_for_updates_worker(current_version: str, callback: "Callable[[dict], 
         pass  # Sin conexión o URL no configurada → silencioso
 
 
-def _launch_updater_and_exit(new_script_path: str, current_script_path: str) -> None:
+def _launch_updater_and_exit(new_file_path: str, current_file_path: str, restart_cmd: list[str]) -> None:
     """
     Crea un .bat temporal que:
       1. Espera a que este proceso termine
-      2. Reemplaza el .py actual con el recién descargado
-      3. Relanza la app con el mismo intérprete Python
+    2. Reemplaza el archivo actual (.py o .exe) con el recién descargado
+    3. Relanza la app
     Luego termina el proceso actual para liberar el archivo.
     """
+    if not restart_cmd:
+        return
+
+    if len(restart_cmd) == 1:
+        restart_line = f"start \"\" \"{restart_cmd[0]}\""
+    else:
+        restart_line = "start \"\" " + " ".join(f'\"{a}\"' for a in restart_cmd)
+
     bat_lines = [
         "@echo off",
         "echo Aplicando actualizacion, por favor espera...",
@@ -80,17 +138,17 @@ def _launch_updater_and_exit(new_script_path: str, current_script_path: str) -> 
         "    goto wait_loop",
         ")",
         # Reemplazar el archivo
-        f"copy /Y \"{new_script_path}\" \"{current_script_path}\"",
+        f"copy /Y \"{new_file_path}\" \"{current_file_path}\"",
         "if errorlevel 1 (",
         "    echo ERROR: No se pudo reemplazar el archivo.",
         "    pause",
         "    goto cleanup",
         ")",
         # Relanzar la app
-        f"start \"\" \"{sys.executable}\" \"{current_script_path}\"",
+        restart_line,
         ":cleanup",
-        # Borrar el .py temporal descargado y el propio .bat
-        f"del /F /Q \"{new_script_path}\" 2>NUL",
+        # Borrar el archivo temporal descargado y el propio .bat
+        f"del /F /Q \"{new_file_path}\" 2>NUL",
         "del /F /Q \"%~f0\"",
     ]
 
@@ -379,7 +437,7 @@ class WordPressUtilitiesApp:
     def _show_update_dialog(self, update_info: dict) -> None:
         """Muestra una ventana de actualización con progreso de descarga."""
         remote_ver = update_info.get("version", "?")
-        download_url = update_info.get("download_url", "")
+        download_url = _select_download_url(update_info)
         notes = update_info.get("notes", "")
 
         dlg = tk.Toplevel(self.root)
@@ -443,7 +501,12 @@ class WordPressUtilitiesApp:
 
         def do_update() -> None:
             if not download_url:
-                messagebox.showerror("Error", "No hay URL de descarga configurada.", parent=dlg)
+                mode = ".exe" if _is_frozen_app() else ".py"
+                messagebox.showerror(
+                    "Error",
+                    f"No hay URL de descarga configurada para modo {mode}.",
+                    parent=dlg,
+                )
                 return
             update_btn.configure(state="disabled")
             skip_btn.configure(state="disabled")
@@ -467,7 +530,7 @@ class WordPressUtilitiesApp:
         update_btn: ttk.Button,
         skip_btn: ttk.Button,
     ) -> None:
-        """Descarga el nuevo .py con barra de progreso y luego aplica el reemplazo."""
+        """Descarga la actualización con barra de progreso y luego aplica el reemplazo."""
 
         def ui(fn: "Callable[[], None]") -> None:
             """Despacha al hilo principal de forma segura."""
@@ -476,8 +539,15 @@ class WordPressUtilitiesApp:
             except Exception:
                 pass
 
-        current_script = os.path.abspath(__file__)
-        fd, tmp_path = tempfile.mkstemp(prefix="wpu_new_", suffix=".py")
+        current_target = _current_install_target()
+        restart_cmd = _restart_command_for_target(current_target)
+
+        parsed = urllib.parse.urlparse(url)
+        _, ext = os.path.splitext(parsed.path)
+        if not ext:
+            ext = ".tmp"
+
+        fd, tmp_path = tempfile.mkstemp(prefix="wpu_new_", suffix=ext)
         os.close(fd)
 
         try:
@@ -502,7 +572,7 @@ class WordPressUtilitiesApp:
                         _kb = kb
                         ui(lambda k=_kb: status_var.set(f"Descargando... {k} KB"))
 
-            # Verificación mínima: que sea un archivo Python no vacío
+            # Verificación mínima: que el archivo no esté vacío
             size = os.path.getsize(tmp_path)
             if size < 100:
                 raise RuntimeError("El archivo descargado parece incompleto o inválido.")
@@ -519,7 +589,7 @@ class WordPressUtilitiesApp:
                     dlg.destroy()
                 except Exception:
                     pass
-                _launch_updater_and_exit(tmp_path, current_script)
+                _launch_updater_and_exit(tmp_path, current_target, restart_cmd)
 
             ui(_apply)
 
