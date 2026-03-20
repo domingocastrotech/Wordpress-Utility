@@ -34,6 +34,19 @@ jobs:
         run: |
           pyinstaller --noconfirm wordpress_utilidades_app.spec
 
+      - name: Read version from version.json
+        id: version
+        shell: pwsh
+        run: |
+          $data = Get-Content app_escritorio/version.json -Raw | ConvertFrom-Json
+          $raw = [string]$data.version
+          if ([string]::IsNullOrWhiteSpace($raw)) {
+            throw "version.json no contiene campo version valido"
+          }
+          $tag = "v$($raw.TrimStart('v'))"
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Tag detectado: $tag"
+
       - name: Upload CI artifact
         uses: actions/upload-artifact@v4
         with:
@@ -41,12 +54,12 @@ jobs:
           path: app_escritorio/dist/Wordpress_Utilidades.exe
           if-no-files-found: error
 
-      - name: Publish EXE to GitHub Release (tag pushes)
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Publish EXE to GitHub Release
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
           files: app_escritorio/dist/Wordpress_Utilidades.exe
           fail_on_unmatched_files: true
           generate_release_notes: true
