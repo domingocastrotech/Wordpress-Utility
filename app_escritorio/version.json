@@ -1,6 +1,6 @@
 {
   "version": "1.1.1",
-  "download_url_exe": "https://github.com/domingocastrotech/Wordpress-Utility/releases/download/v1.1.0/Wordpress_Utilidades.exe",
+  "download_url_exe": "https://github.com/domingocastrotech/Wordpress-Utility/releases/download/v1.1.1/Wordpress_Utilidades.exe",
   "download_url_py": "https://raw.githubusercontent.com/domingocastrotech/Wordpress-Utility/main/app_escritorio/wordpress_utilidades_app.py",
   "download_url": "https://raw.githubusercontent.com/domingocastrotech/Wordpress-Utility/main/app_escritorio/wordpress_utilidades_app.py",
   "notes": "Arreglo instalador automatico y mejoras menores de instalador."
