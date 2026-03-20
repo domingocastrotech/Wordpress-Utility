@@ -110,52 +110,134 @@ def _check_for_updates_worker(current_version: str, callback: "Callable[[dict], 
         pass  # Sin conexión o URL no configurada → silencioso
 
 
+def _ps_quote(value: str) -> str:
+    """Escapa comillas simples para strings de PowerShell entre comillas simples."""
+    return value.replace("'", "''")
+
+
 def _launch_updater_and_exit(new_file_path: str, current_file_path: str, restart_cmd: list[str]) -> None:
     """
-    Crea un .bat temporal que:
-      1. Espera a que este proceso termine
-    2. Reemplaza el archivo actual (.py o .exe) con el recién descargado
-    3. Relanza la app
-    Luego termina el proceso actual para liberar el archivo.
+    Lanza un actualizador gráfico (PowerShell + WinForms) que:
+      1. Espera cierre de la app
+      2. Reemplaza archivo actual (.py/.exe) con reintentos
+      3. Relanza la app
+    Luego cierra el proceso actual para liberar el ejecutable.
     """
     if not restart_cmd:
         return
 
-    if len(restart_cmd) == 1:
-        restart_line = f"start \"\" \"{restart_cmd[0]}\""
-    else:
-        restart_line = "start \"\" " + " ".join(f'\"{a}\"' for a in restart_cmd)
+    restart_exe = restart_cmd[0]
+    restart_args = restart_cmd[1:]
+    restart_args_ps = ", ".join(f"'{_ps_quote(a)}'" for a in restart_args)
+    if not restart_args_ps:
+        restart_args_ps = ""
 
-    bat_lines = [
-        "@echo off",
-        "echo Aplicando actualizacion, por favor espera...",
-        # Espera a que el proceso Python padre muera (máx ~15s)
-        f"set PID={os.getpid()}",
-        ":wait_loop",
-        "tasklist /FI \"PID eq %PID%\" 2>NUL | find \"%PID%\" >NUL",
-        "if not errorlevel 1 (",
-        "    timeout /t 1 /nobreak >NUL",
-        "    goto wait_loop",
-        ")",
-        # Reemplazar el archivo
-        f"copy /Y \"{new_file_path}\" \"{current_file_path}\"",
-        "if errorlevel 1 (",
-        "    echo ERROR: No se pudo reemplazar el archivo.",
-        "    pause",
-        "    goto cleanup",
-        ")",
-        # Relanzar la app
-        restart_line,
-        ":cleanup",
-        # Borrar el archivo temporal descargado y el propio .bat
-        f"del /F /Q \"{new_file_path}\" 2>NUL",
-        "del /F /Q \"%~f0\"",
-    ]
+    ps_script = f"""
+$ErrorActionPreference = 'SilentlyContinue'
+$pidToWait = {os.getpid()}
+$newFile = '{_ps_quote(new_file_path)}'
+$currentFile = '{_ps_quote(current_file_path)}'
+$restartExe = '{_ps_quote(restart_exe)}'
+$restartArgs = @({restart_args_ps})
 
-    fd, bat_path = tempfile.mkstemp(prefix="wpu_update_", suffix=".bat")
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+[System.Windows.Forms.Application]::EnableVisualStyles()
+
+$form = New-Object System.Windows.Forms.Form
+$form.Text = 'Actualizando WordPress Utilidades'
+$form.Size = New-Object System.Drawing.Size(460, 170)
+$form.StartPosition = 'CenterScreen'
+$form.TopMost = $true
+$form.FormBorderStyle = 'FixedDialog'
+$form.MaximizeBox = $false
+$form.MinimizeBox = $false
+
+$label = New-Object System.Windows.Forms.Label
+$label.AutoSize = $false
+$label.Size = New-Object System.Drawing.Size(420, 34)
+$label.Location = New-Object System.Drawing.Point(18, 14)
+$label.Text = 'Preparando actualización...'
+$label.Font = New-Object System.Drawing.Font('Segoe UI', 10)
+$form.Controls.Add($label)
+
+$bar = New-Object System.Windows.Forms.ProgressBar
+$bar.Location = New-Object System.Drawing.Point(18, 64)
+$bar.Size = New-Object System.Drawing.Size(420, 22)
+$bar.Minimum = 0
+$bar.Maximum = 100
+$bar.Style = 'Continuous'
+$form.Controls.Add($bar)
+
+$pct = New-Object System.Windows.Forms.Label
+$pct.AutoSize = $false
+$pct.Size = New-Object System.Drawing.Size(420, 24)
+$pct.Location = New-Object System.Drawing.Point(18, 96)
+$pct.Text = '0%'
+$pct.Font = New-Object System.Drawing.Font('Segoe UI', 9)
+$form.Controls.Add($pct)
+
+function Set-Ui([int]$value, [string]$text) {{
+    if ($value -lt 0) {{ $value = 0 }}
+    if ($value -gt 100) {{ $value = 100 }}
+    $bar.Value = $value
+    $label.Text = $text
+    $pct.Text = "$value%"
+    [System.Windows.Forms.Application]::DoEvents()
+}}
+
+$form.Show()
+Set-Ui 5 'Esperando cierre de la app...'
+
+$waitTicks = 0
+while (Get-Process -Id $pidToWait -ErrorAction SilentlyContinue) {{
+    Start-Sleep -Milliseconds 250
+    $waitTicks++
+    $step = 5 + [int]([Math]::Min(15, $waitTicks / 2))
+    Set-Ui $step 'Esperando cierre de la app...'
+    if ($waitTicks -ge 120) {{ break }}
+}}
+
+$copied = $false
+for ($i = 1; $i -le 80; $i++) {{
+    try {{
+        Copy-Item -LiteralPath $newFile -Destination $currentFile -Force -ErrorAction Stop
+        $copied = $true
+        break
+    }} catch {{}}
+
+    $prog = 20 + [int](($i / 80) * 70)
+    Set-Ui $prog "Aplicando actualización... intento $i/80"
+    Start-Sleep -Milliseconds 250
+}}
+
+if ($copied) {{
+    Set-Ui 95 'Reiniciando aplicación...'
+    if ($restartArgs.Count -gt 0) {{
+        Start-Process -FilePath $restartExe -ArgumentList $restartArgs | Out-Null
+    }} else {{
+        Start-Process -FilePath $restartExe | Out-Null
+    }}
+
+    Set-Ui 100 'Actualización completada'
+    Start-Sleep -Milliseconds 700
+    Remove-Item -LiteralPath $newFile -Force -ErrorAction SilentlyContinue
+}} else {{
+    [System.Windows.Forms.MessageBox]::Show(
+        'No se pudo reemplazar el archivo porque sigue en uso. Cierra la app y vuelve a intentar.',
+        'Error de actualización',
+        [System.Windows.Forms.MessageBoxButtons]::OK,
+        [System.Windows.Forms.MessageBoxIcon]::Error
+    ) | Out-Null
+}}
+
+$form.Close()
+""".strip()
+
+    fd, ps1_path = tempfile.mkstemp(prefix="wpu_update_", suffix=".ps1")
     try:
-        with os.fdopen(fd, "w", encoding="cp1252") as f:
-            f.write("\r\n".join(bat_lines))
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(ps_script)
     except Exception:
         try:
             os.close(fd)
@@ -165,14 +247,20 @@ def _launch_updater_and_exit(new_file_path: str, current_file_path: str, restart
 
     try:
         subprocess.Popen(
-            ["cmd.exe", "/C", bat_path],
-            creationflags=subprocess.CREATE_NEW_CONSOLE,  # type: ignore[attr-defined]
+            [
+                "powershell.exe",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                ps1_path,
+            ],
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             close_fds=True,
         )
     except Exception:
         return
 
-    # Cerramos este proceso para que el .bat pueda reemplazar el archivo
     os._exit(0)
 
 
