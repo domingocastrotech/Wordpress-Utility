@@ -599,14 +599,23 @@ class WordPressUtilitiesApp:
             except OSError:
                 pass
 
-            def _err(msg: str = str(exc)) -> None:
+            def _err(msg: str = str(exc), failed_url: str = url) -> None:
                 status_var.set(f"Error: {msg}")
                 try:
                     update_btn.configure(state="normal")
                     skip_btn.configure(state="normal")
                 except Exception:
                     pass
-                messagebox.showerror("Error de actualización", f"No se pudo descargar la actualización:\n\n{msg}", parent=dlg)
+                messagebox.showerror(
+                    "Error de actualización",
+                    (
+                        "No se pudo descargar la actualización:\n\n"
+                        f"{msg}\n\n"
+                        "URL consultada:\n"
+                        f"{failed_url}"
+                    ),
+                    parent=dlg,
+                )
 
             ui(_err)
 
