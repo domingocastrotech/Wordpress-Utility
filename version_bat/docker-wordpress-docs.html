@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker WordPress — Documentación</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161c2e;
+    --border: #1e2840;
+    --accent: #4f7dff;
+    --accent2: #00e5c0;
+    --accent3: #ff6b6b;
+    --accent4: #ffd166;
+    --text: #e2e8f5;
+    --muted: #6b7a99;
+    --code-bg: #0d1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(79,125,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,125,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 5rem 0 4rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .header-glow {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(79,125,255,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .logo-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #4f7dff, #00e5c0);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 0 30px rgba(79,125,255,0.4);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(79,125,255,0.12);
+    border: 1px solid rgba(79,125,255,0.3);
+    color: #7da4ff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.9rem;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.2rem;
+  }
+
+  h1 span {
+    background: linear-gradient(135deg, #4f7dff 0%, #00e5c0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-desc {
+    color: var(--muted);
+    font-size: 1.05rem;
+    max-width: 540px;
+    margin: 0 auto 2.5rem;
+    font-weight: 300;
+  }
+
+  /* ── SCRIPT CARDS OVERVIEW ── */
+  .scripts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin: 0 0 4rem;
+  }
+
+  @media (max-width: 640px) { .scripts-grid { grid-template-columns: 1fr; } }
+
+  .script-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+
+  .script-card:hover {
+    border-color: rgba(79,125,255,0.4);
+    transform: translateY(-2px);
+  }
+
+  .script-card .icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    background: var(--surface2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .script-card h3 {
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent2);
+    margin-bottom: 0.3rem;
+  }
+
+  .script-card p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 4rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    background: rgba(79,125,255,0.1);
+    border: 1px solid rgba(79,125,255,0.25);
+    border-radius: 6px;
+    padding: 0.2rem 0.6rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .section-icon {
+    margin-left: auto;
+    font-size: 1.5rem;
+    opacity: 0.6;
+  }
+
+  /* ── FILE TAG ── */
+  .file-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.3rem 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent2);
+    margin-bottom: 1.2rem;
+  }
+
+  /* ── STEPS ── */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.3rem;
+  }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+  }
+
+  .step-num.blue  { background: rgba(79,125,255,0.2);  color: #7da4ff; border: 1px solid rgba(79,125,255,0.3); }
+  .step-num.green { background: rgba(0,229,192,0.15);  color: #00e5c0; border: 1px solid rgba(0,229,192,0.3); }
+  .step-num.red   { background: rgba(255,107,107,0.15); color: #ff8888; border: 1px solid rgba(255,107,107,0.3); }
+  .step-num.gold  { background: rgba(255,209,102,0.15); color: #ffd166; border: 1px solid rgba(255,209,102,0.3); }
+
+  .step-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .step-body {
+    padding: 0 1.3rem 1.2rem 3.8rem;
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-weight: 300;
+  }
+
+  .step-body strong { color: var(--text); font-weight: 600; }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+
+  .code-label {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 0.45rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .code-label::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent2);
+    opacity: 0.7;
+  }
+
+  pre {
+    padding: 1rem 1.2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    color: #c9d5f0;
+  }
+
+  .kw  { color: #7da4ff; }
+  .str { color: #00e5c0; }
+  .cmt { color: #4a5568; font-style: italic; }
+  .var { color: #ffd166; }
+  .cmd { color: #ff9a7b; }
+
+  /* ── INFO BOX ── */
+  .info-box {
+    background: rgba(79,125,255,0.06);
+    border: 1px solid rgba(79,125,255,0.2);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+    font-size: 0.87rem;
+    color: #9bb4e8;
+  }
+
+  .info-box.warn {
+    background: rgba(255,209,102,0.06);
+    border-color: rgba(255,209,102,0.2);
+    border-left-color: var(--accent4);
+    color: #e8d49b;
+  }
+
+  .info-box.success {
+    background: rgba(0,229,192,0.06);
+    border-color: rgba(0,229,192,0.2);
+    border-left-color: var(--accent2);
+    color: #9be8d8;
+  }
+
+  .info-box strong { color: inherit; font-weight: 700; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.2rem 0;
+  }
+
+  .flow-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .flow-arrow {
+    color: var(--muted);
+    font-size: 1rem;
+  }
+
+  /* ── CREDENTIAL TABLE ── */
+  .creds {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+
+  .creds table { width: 100%; border-collapse: collapse; }
+
+  .creds th {
+    background: var(--surface2);
+    padding: 0.6rem 1.2rem;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .creds td {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(30,40,64,0.5);
+  }
+
+  .creds tr:last-child td { border-bottom: none; }
+
+  .creds td:first-child { color: var(--muted); font-size: 0.8rem; }
+  .creds td:last-child  { font-family: 'JetBrains Mono', monospace; color: var(--accent2); font-size: 0.82rem; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 3rem 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 3rem 0 4rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  footer .dot {
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--muted);
+    margin: 0 0.5rem;
+    vertical-align: middle;
+  }
+
+  /* ── TOPOLOGY DIAGRAM ── */
+  .topology {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 1.5rem 0;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .topo-node {
+    text-align: center;
+    padding: 1rem 1.3rem;
+    border-radius: 12px;
+    min-width: 110px;
+  }
+
+  .topo-node.host   { background: rgba(79,125,255,0.1); border: 1px solid rgba(79,125,255,0.3); }
+  .topo-node.wp     { background: rgba(0,229,192,0.1);  border: 1px solid rgba(0,229,192,0.3); }
+  .topo-node.db     { background: rgba(255,209,102,0.1); border: 1px solid rgba(255,209,102,0.3); }
+
+  .topo-node .icon2 { font-size: 1.6rem; display: block; margin-bottom: 0.4rem; }
+  .topo-node .label { font-size: 0.75rem; font-weight: 600; margin-bottom: 0.15rem; }
+  .topo-node .sub   { font-size: 0.68rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+  .topo-arrow {
+    font-size: 1.3rem;
+    color: var(--muted);
+  }
+
+  .topo-arrow.vertical { transform: rotate(90deg); }
+
+  /* ── HIGHLIGHT INLINE ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    background: rgba(79,125,255,0.1);
+    border: 1px solid rgba(79,125,255,0.2);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    color: #9bb4ff;
+  }
+
+  /* animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section { animation: fadeUp 0.5s ease both; }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.1s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+  .section:nth-child(5) { animation-delay: 0.2s; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-glow"></div>
+    <div class="badge">📋 Documentación Técnica</div>
+    <div class="logo-row">
+      <div class="logo-icon">🐳</div>
+    </div>
+    <h1>Docker <span>WordPress</span><br>Local Environment</h1>
+    <p class="header-desc">Scripts de automatización para desplegar, parar, importar y exportar WordPress en contenedores Docker de forma local, con un menu central para ejecutarlos.</p>
+  </header>
+
+  <!-- OVERVIEW CARDS -->
+  <div class="scripts-grid">
+    <div class="script-card">
+      <div class="icon">🔧</div>
+      <div>
+        <h3>docker_mariadb_wordpress.bat</h3>
+        <p>Crea y configura el entorno Docker completo desde cero con MariaDB y WordPress.</p>
+      </div>
+    </div>
+    <div class="script-card">
+      <div class="icon">▶️</div>
+      <div>
+        <h3>gestor_contenedores.bat</h3>
+        <p>Gestion diaria de contenedores: arranque/parada por numero, perfiles, networks, logs e historial.</p>
+      </div>
+    </div>
+    <div class="script-card">
+      <div class="icon">📦</div>
+      <div>
+        <h3>exportar-wordpress-v3.bat</h3>
+        <p>Exporta la base de datos y los archivos wp-content para subir al hosting.</p>
+      </div>
+    </div>
+    <div class="script-card">
+      <div class="icon">📥</div>
+      <div>
+        <h3>importar-wordpress.bat</h3>
+        <p>Importa un backup existente al entorno Docker local con navegador de carpetas interactivo.</p>
+      </div>
+    </div>
+    <div class="script-card">
+      <div class="icon">🧭</div>
+      <div>
+        <h3>menu-utilidades.bat</h3>
+        <p>Menu principal para abrir el resto de scripts y volver automaticamente al menu al finalizar cada uno.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARQUITECTURA -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">00</span>
+      <h2>Arquitectura del entorno</h2>
+      <span class="section-icon">🏗️</span>
+    </div>
+
+    <p style="color: var(--muted); margin-bottom: 1.2rem; font-size: 0.9rem;">Los scripts trabajan sobre la misma infraestructura Docker: WordPress, MariaDB y phpMyAdmin conectados en red privada con volumenes persistentes, coordinados desde un menu principal.</p>
+
+    <div class="topology">
+      <div class="topo-node host">
+        <span class="icon2">💻</span>
+        <div class="label">Host Windows</div>
+        <div class="sub">localhost</div>
+      </div>
+      <div class="topo-arrow">→</div>
+      <div class="topo-node wp">
+        <span class="icon2">🌐</span>
+        <div class="label">WordPress</div>
+        <div class="sub">:8182 / :8445</div>
+      </div>
+      <div class="topo-arrow">↔</div>
+      <div class="topo-node db">
+        <span class="icon2">🗄️</span>
+        <div class="label">MariaDB</div>
+        <div class="sub">:3307</div>
+      </div>
+      <div class="topo-arrow">↔</div>
+      <div class="topo-node host">
+        <span class="icon2">🧰</span>
+        <div class="label">phpMyAdmin</div>
+        <div class="sub">:8181</div>
+      </div>
+    </div>
+
+    <div class="creds">
+      <table>
+        <thead>
+          <tr><th>Recurso</th><th>Valor</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Red Docker</td><td>wp-network1</td></tr>
+          <tr><td>Volumen WordPress</td><td>wpdata1 → /bitnami/wordpress</td></tr>
+          <tr><td>Volumen MariaDB</td><td>mariadbdata1 → /bitnami/mariadb</td></tr>
+          <tr><td>URL local (default)</td><td>http://localhost:8182 (configurable)</td></tr>
+          <tr><td>URL local SSL (default)</td><td>https://localhost:8445 (configurable)</td></tr>
+          <tr><td>URL en red local (default)</td><td>http://192.168.200.51:8182 (configurable)</td></tr>
+          <tr><td>phpMyAdmin (default)</td><td>http://localhost:8181 (configurable)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="creds" style="margin-top: 1rem;">
+      <table>
+        <thead>
+          <tr><th>Credencial</th><th>Valor</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>WordPress admin user</td><td>admin (default, configurable)</td></tr>
+          <tr><td>WordPress admin pass</td><td>admin (default, configurable)</td></tr>
+          <tr><td>MariaDB root pass</td><td>1234 (default, configurable)</td></tr>
+          <tr><td>MariaDB user / pass</td><td>admin / admin (default, configurable)</td></tr>
+          <tr><td>Base de datos</td><td>wordpress (default, configurable)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SCRIPT 1 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>Crear entorno desde cero</h2>
+      <span class="section-icon">🔧</span>
+    </div>
+
+    <div class="file-tag">📄 docker_mariadb_wordpress.bat</div>
+
+    <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+      Script de instalación completa con <strong style="color:var(--text)">configuracion interactiva</strong>. Permite definir nombres, puertos, credenciales, IP de red y dominio de produccion antes de recrear el entorno.
+    </p>
+
+    <div class="info-box warn">
+      <strong>⚠️ Atención:</strong> Este script destruye los contenedores, volumenes y red que indiques en la configuracion (por defecto <code>wordpress1</code>, <code>mariadb1</code>, <code>phpmyadmin1</code>, <code>wpdata1</code>, <code>mariadbdata1</code>, <code>wp-network1</code>). Usalo solo para instalaciones limpias.
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num red">1</span>
+          <span class="step-title">Limpieza del entorno anterior</span>
+        </div>
+        <div class="step-body">
+          Para los contenedores activos, los elimina junto con sus volumenes y la red definida. Garantiza una instalacion sin residuos.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num blue">2</span>
+          <span class="step-title">Creación de red y volúmenes</span>
+        </div>
+        <div class="step-body">
+          Crea la red privada y los volumenes configurados para persistencia, validando que los puertos del host no esten ocupados antes de continuar.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num gold">3</span>
+          <span class="step-title">Arranque de MariaDB</span>
+        </div>
+        <div class="step-body">
+          Lanza el contenedor MariaDB usando <strong>bitnami/mariadb:latest</strong> con la base de datos y credenciales definidas en la configuracion, y espera hasta que responda consultas SQL.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num blue">4</span>
+          <span class="step-title">Preconfiguración de permisos</span>
+        </div>
+        <div class="step-body">
+          Ejecuta un contenedor temporal como <code>root</code> para aplicar <code>chmod 777</code> y <code>chown 1001:1001</code> en <code>/bitnami/wordpress</code>, evitando errores de permisos al montar el volumen.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num green">5</span>
+          <span class="step-title">Arranque de WordPress</span>
+        </div>
+        <div class="step-body">
+          Lanza el contenedor WordPress usando <strong>bitnami/wordpress:latest</strong> apuntando a MariaDB. Expone puertos configurables (por defecto <code>8182</code> HTTP y <code>8445</code> HTTPS), y espera hasta que el sitio responda por HTTP.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num blue">6</span>
+          <span class="step-title">Configurar URLs y reiniciar WordPress</span>
+        </div>
+        <div class="step-body">
+          Ajusta URLs con <code>wp search-replace</code> entre dominio de produccion, localhost e IP de red local, y espera a que WordPress vuelva tras el reinicio.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num green">7</span>
+          <span class="step-title">Arrancar phpMyAdmin</span>
+        </div>
+        <div class="step-body">
+          Crea y arranca un contenedor <code>phpmyadmin:latest</code> conectado a la misma red para administrar MariaDB desde navegador.
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box success" style="margin-top: 1.2rem;">
+      <strong>✅ Resultado:</strong> WordPress + MariaDB + phpMyAdmin listos con valores configurables; por defecto WordPress en <code>http://localhost:8182</code> y phpMyAdmin en <code>http://localhost:8181</code>.
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Fragmento clave — preconfiguración de permisos</div>
+      <pre><span class="cmt">:: Evita errores de permisos al montar el volumen</span>
+<span class="cmd">docker run</span> <span class="kw">--rm</span> -u root \
+  -v wpdata1:/bitnami/wordpress \
+  --entrypoint sh bitnami/wordpress:latest \
+  -c <span class="str">"chmod -R 777 /bitnami/wordpress &amp;&amp; chown -R 1001:1001 /bitnami/wordpress"</span></pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SCRIPT 2 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>Gestionar contenedores existentes</h2>
+      <span class="section-icon">▶️</span>
+    </div>
+
+    <div class="file-tag">📄 gestor_contenedores.bat</div>
+
+    <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+      Script de uso diario para <strong style="color:var(--text)">arrancar, apagar, agrupar por perfiles, gestionar networks y revisar logs/historial</strong> sin recrear contenedores.
+    </p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num blue">1</span>
+          <span class="step-title">Comprobar Docker y arrancarlo si hace falta</span>
+        </div>
+        <div class="step-body">
+          Verifica que exista <code>docker</code>. Si Docker no esta operativo, intenta abrir <code>Docker Desktop.exe</code> y espera hasta que <code>docker info</code> responda.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num gold">2</span>
+          <span class="step-title">Listar todos los contenedores</span>
+        </div>
+        <div class="step-body">
+          Muestra cada contenedor con su estado actual, salud y puerto principal cuando esta arrancado.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num green">3</span>
+          <span class="step-title">Operar por menu (N/P/T/A)</span>
+        </div>
+        <div class="step-body">
+          Permite arrancar o apagar por numero, en lote (<code>T</code>/<code>A</code>) y por perfil (<code>F</code>/<code>O</code>). Tambien puedes escribir el nombre exacto de un perfil para accion rapida.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num red">4</span>
+          <span class="step-title">Funciones avanzadas del menu</span>
+        </div>
+        <div class="step-body">
+          Incluye gestor de perfiles (<code>G</code>), gestor de networks (<code>W</code>: listar, conectar, desconectar, renombrar, crear y eliminar), logs por contenedor (<code>L</code>) e historial (<code>H</code>).
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>💡 Nota:</strong> En la opcion de logs, ahora primero se muestra el listado numerado de contenedores antes de pedir cual elegir.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SCRIPT 3 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>Exportar al hosting</h2>
+      <span class="section-icon">📦</span>
+    </div>
+
+    <div class="file-tag">📄 exportar-wordpress-v3.bat</div>
+
+    <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+      Genera un backup completo listo para hosting. Permite seleccionar contenedor WordPress, contenedor DB y base de datos de forma interactiva, y arranca contenedores si estan apagados.
+    </p>
+
+    <div class="info-box">
+      <strong>📁 Destino del backup:</strong> <code>%USERPROFILE%\Desktop\wordpress-export\YYYY_MM_dd_HH-mm\</code>
+    </div>
+
+    <div class="flow">
+      <div class="flow-item">🔗 Corregir URL</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">🗄️ Exportar SQL</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">📁 Exportar wp-content</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">🔄 Restaurar URL local</div>
+    </div>
+
+    <div class="steps" style="margin-top:1rem;">
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num red">1/4</span>
+          <span class="step-title">Corregir URL antes de exportar</span>
+        </div>
+        <div class="step-body">
+          Usa <code>wp search-replace</code> para sustituir la URL local indicada (editable en tiempo de ejecucion, por defecto <code>http://localhost:8181</code>) por el dominio real de produccion.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num gold">2/4</span>
+          <span class="step-title">Exportar base de datos</span>
+        </div>
+        <div class="step-body">
+          Ejecuta <code>mysqldump</code> dentro del contenedor de base de datos seleccionado y copia el resultado como <strong>export.sql</strong> en la carpeta de backup.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num blue">3/4</span>
+          <span class="step-title">Exportar wp-content</span>
+        </div>
+        <div class="step-body">
+          Genera un <code>.tar</code> del directorio <code>wp-content</code> dentro del contenedor WordPress siguiendo symlinks (<code>tar ch</code>), lo copia al host y lo extrae como carpeta. El archivo <code>wp-content.tar</code> y la carpeta <code>wp-content/</code> quedan ambos disponibles.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num green">4/4</span>
+          <span class="step-title">Restaurar URL local</span>
+        </div>
+        <div class="step-body">
+          Revierte el <code>search-replace</code> para dejar el entorno local tal y como estaba antes de la exportacion, incluso si hubo error en pasos intermedios.
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Archivos generados en la carpeta de backup</div>
+      <pre><span class="var">wordpress-export/</span>
+    <span class="var">└── 2026_03_13_08-53/</span>
+    ├── <span class="str">export.sql</span>        <span class="cmt">← Importar en phpMyAdmin del hosting</span>
+    ├── <span class="str">wp-content/</span>       <span class="cmt">← Subir por FTP a public_html/wp-content</span>
+    └── <span class="str">wp-content.tar</span>    <span class="cmt">← Alternativa comprimida</span></pre>
+    </div>
+
+    <div class="info-box warn">
+      <strong>⚠️ Importante:</strong> Al importar en el hosting, <strong>no tocar wp-config.php</strong>. Solo se importa el SQL y se sube el wp-content por FTP.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SCRIPT 4 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>Importar backup al entorno local</h2>
+      <span class="section-icon">📥</span>
+    </div>
+
+    <div class="file-tag">📄 importar-wordpress.bat</div>
+
+    <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+      Restaura un backup WordPress en Docker local con deteccion interactiva de contenedores, URL local y credenciales de base de datos, ademas de navegador de carpetas.
+    </p>
+
+    <div class="info-box">
+      <strong>📂 Ubicación por defecto:</strong> Busca backups en la carpeta padre donde se encuentra el propio <code>.bat</code>. Puedes navegar hacia arriba o hacia subcarpetas.
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num blue">Paso previo</span>
+          <span class="step-title">Navegador de carpetas interactivo</span>
+        </div>
+        <div class="step-body">
+          Muestra un listado de carpetas y archivos numerados. Indica automaticamente que tipo de contenido importable hay en cada carpeta (<code>[wp-content]</code>, <code>[tar]</code>, <code>[zip]</code>, <code>[sql]</code>). Puedes navegar hacia subcarpetas o volver atras con <code>[0]</code>.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num red">1/4</span>
+          <span class="step-title">Copiar wp-content al contenedor</span>
+        </div>
+        <div class="step-body">
+          Acepta tres formatos de origen:
+          <br>• <strong>TAR</strong> — copia y descomprime con <code>tar xf</code>
+          <br>• <strong>ZIP</strong> — copia y descomprime con <code>unzip</code>
+          <br>• <strong>Carpeta</strong> — copia directamente con <code>docker cp</code>
+          <br><br>Tras descomprimir, hace <code>cp -rf</code> al directorio de WordPress y ajusta permisos con <code>chown 1001:1001</code>.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num gold">2/4</span>
+          <span class="step-title">Importar base de datos</span>
+        </div>
+        <div class="step-body">
+          Copia el <code>.sql</code> seleccionado al contenedor MariaDB y lo importa en la base de datos que hayas elegido en el asistente.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num blue">3/4</span>
+          <span class="step-title">Corregir URL</span>
+        </div>
+        <div class="step-body">
+          Ejecuta <code>wp search-replace</code> en WordPress usando la URL local detectada automaticamente (<code>http://localhost:PUERTO</code>) y el dominio real del backup que introduces en el asistente.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num green">4/4</span>
+          <span class="step-title">Reiniciar WordPress</span>
+        </div>
+        <div class="step-body">
+          Reinicia el contenedor WordPress seleccionado y espera unos segundos para que el sitio recargue con el nuevo contenido importado.
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box success">
+      <strong>✅ Resultado:</strong> El backup queda disponible en <code>http://localhost:PUERTO_DETECTADO</code>; el script intenta autodetectar credenciales DB y permite elegir la base de datos antes de importar.
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Formatos de wp-content soportados</div>
+      <pre><span class="cmt">Formato TAR (recomendado):</span>
+  <span class="str">wp-content.tar</span>  ← generado por el script de exportación
+
+<span class="cmt">Formato ZIP:</span>
+  <span class="str">wp-content.zip</span>  ← compatible con backups externos
+
+<span class="cmt">Carpeta directa:</span>
+  <span class="str">wp-content/</span>     ← carpeta descomprimida manualmente</pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SCRIPT 5 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>Menu principal de utilidades</h2>
+      <span class="section-icon">🧭</span>
+    </div>
+
+    <div class="file-tag">📄 menu-utilidades.bat</div>
+
+    <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+      Punto de entrada unico para trabajar con todos los scripts. Lanza cada utilidad en una ventana hija, espera a que termine y vuelve automaticamente al menu.
+    </p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num blue">1/3</span>
+          <span class="step-title">Seleccionar script por numero</span>
+        </div>
+        <div class="step-body">
+          Desde una sola pantalla puedes lanzar <code>docker_mariadb_wordpress.bat</code>, <code>importar-wordpress.bat</code>, <code>exportar-wordpress-v3.bat</code> y <code>gestor_contenedores.bat</code>, o abrir la documentación HTML en el navegador.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num gold">2/3</span>
+          <span class="step-title">Retorno automatico al menu</span>
+        </div>
+        <div class="step-body">
+          Cada utilidad se ejecuta con espera (<code>start /wait</code>), por lo que al cerrar el script hijo reaparece el menu principal sin abrir otra consola manualmente.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num red">3/3</span>
+          <span class="step-title">Cerrar CMD desde el menu</span>
+        </div>
+        <div class="step-body">
+          Incluye una opcion dedicada <code>[0]</code> para salir y cerrar la ventana de comandos de forma limpia.
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Opciones disponibles en el menu</div>
+      <pre><span class="str">1</span>  <span class="cmt">← docker_mariadb_wordpress.bat</span>
+<span class="str">2</span>  <span class="cmt">← importar-wordpress.bat</span>
+<span class="str">3</span>  <span class="cmt">← exportar-wordpress-v3.bat</span>
+<span class="str">4</span>  <span class="cmt">← gestor_contenedores.bat</span>
+<span class="str">5</span>  <span class="cmt">← abrir documentación</span>
+<span class="str">0</span>  <span class="cmt">← Cerrar CMD</span></pre>
+    </div>
+
+    <div class="info-box warn">
+      <strong>⚠️ Nota:</strong> El menu no reemplaza a las utilidades: solo actua como lanzador central para simplificar el flujo de trabajo.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- FLUJO RECOMENDADO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>Flujos de uso recomendados</h2>
+      <span class="section-icon">🗺️</span>
+    </div>
+
+    <p style="font-weight: 600; margin-bottom: 0.8rem; font-size: 0.9rem;">🆕 Primera instalación</p>
+    <div class="flow" style="margin-bottom: 1.5rem;">
+      <div class="flow-item">① docker_mariadb_wordpress.bat</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">② Abrir localhost:8182</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">③ Instalar plugins</div>
+    </div>
+
+    <p style="font-weight: 600; margin-bottom: 0.8rem; font-size: 0.9rem;">☀️ Uso diario</p>
+    <div class="flow" style="margin-bottom: 1.5rem;">
+      <div class="flow-item">① gestor_contenedores.bat (arrancar)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">② Trabajar en localhost:PUERTO_HTTP</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">③ gestor_contenedores.bat (apagar)</div>
+    </div>
+
+    <p style="font-weight: 600; margin-bottom: 0.8rem; font-size: 0.9rem;">🚀 Desplegar en hosting</p>
+    <div class="flow" style="margin-bottom: 1.5rem;">
+      <div class="flow-item">① exportar-wordpress-v3.bat</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">② Subir SQL a phpMyAdmin</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">③ Subir wp-content por FTP</div>
+    </div>
+
+    <p style="font-weight: 600; margin-bottom: 0.8rem; font-size: 0.9rem;">🔄 Restaurar backup en local</p>
+    <div class="flow">
+      <div class="flow-item">① docker_mariadb_wordpress.bat</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">② importar-wordpress.bat</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">③ Seleccionar SQL + wp-content</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Docker WordPress Local Environment<span class="dot"></span>Bitnami Images<span class="dot"></span>MariaDB + WordPress</p>
+  </footer>
+
+</div>
+</body>
+</html>
