@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WordPress Utilidades App — Documentación</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161c2e;
+    --border: #1e2840;
+    --accent: #4f7dff;
+    --accent2: #00e5c0;
+    --accent3: #ff6b6b;
+    --accent4: #ffd166;
+    --text: #e2e8f5;
+    --muted: #6b7a99;
+    --code-bg: #0d1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(79,125,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,125,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 5rem 0 4rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .header-glow {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(79,125,255,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .logo-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #4f7dff, #00e5c0);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 0 30px rgba(79,125,255,0.4);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(79,125,255,0.12);
+    border: 1px solid rgba(79,125,255,0.3);
+    color: #7da4ff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.9rem;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.2rem;
+  }
+
+  h1 span {
+    background: linear-gradient(135deg, #4f7dff 0%, #00e5c0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-desc {
+    color: var(--muted);
+    font-size: 1.05rem;
+    max-width: 580px;
+    margin: 0 auto 2.5rem;
+    font-weight: 300;
+  }
+
+  /* ── OVERVIEW GRID ── */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 0 0 4rem;
+  }
+
+  @media (max-width: 760px) { .overview-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 1000px) and (min-width: 761px) { .overview-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .ov-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.4rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .ov-card:hover { border-color: rgba(79,125,255,0.4); transform: translateY(-2px); }
+
+  .ov-card .icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    background: var(--surface2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ov-card h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+
+  .ov-card p { font-size: 0.82rem; color: var(--muted); font-weight: 300; }
+
+  /* ── SECTION ── */
+  .section { margin-bottom: 4rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    background: rgba(79,125,255,0.1);
+    border: 1px solid rgba(79,125,255,0.25);
+    border-radius: 6px;
+    padding: 0.2rem 0.6rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .section h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+  .section-icon { margin-left: auto; font-size: 1.5rem; opacity: 0.6; }
+
+  /* ── TAB CARD ── */
+  .tab-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 1.2rem;
+  }
+
+  .tab-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .tab-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent2);
+    background: rgba(0,229,192,0.08);
+    border: 1px solid rgba(0,229,192,0.2);
+    border-radius: 6px;
+    padding: 0.2rem 0.7rem;
+  }
+
+  .tab-card-title { font-weight: 700; font-size: 1rem; }
+  .tab-card-body { padding: 1.2rem 1.4rem; color: var(--muted); font-size: 0.88rem; font-weight: 300; }
+  .tab-card-body strong { color: var(--text); font-weight: 600; }
+  .tab-card-body p { margin-bottom: 0.7rem; }
+  .tab-card-body p:last-child { margin-bottom: 0; }
+
+  /* ── BUTTON LIST ── */
+  .btn-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.8rem 0;
+  }
+
+  .btn-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+  }
+
+  .btn-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent4);
+    flex-shrink: 0;
+    min-width: 160px;
+  }
+
+  .btn-desc { font-size: 0.82rem; color: var(--muted); }
+  .btn-desc strong { color: var(--text); }
+
+  /* ── STEPS ── */
+  .steps { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+
+  .step-header { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.3rem; }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+  }
+
+  .step-num.blue  { background: rgba(79,125,255,0.2);   color: #7da4ff; border: 1px solid rgba(79,125,255,0.3); }
+  .step-num.green { background: rgba(0,229,192,0.15);   color: #00e5c0; border: 1px solid rgba(0,229,192,0.3); }
+  .step-num.red   { background: rgba(255,107,107,0.15); color: #ff8888; border: 1px solid rgba(255,107,107,0.3); }
+  .step-num.gold  { background: rgba(255,209,102,0.15); color: #ffd166; border: 1px solid rgba(255,209,102,0.3); }
+
+  .step-title { font-weight: 600; font-size: 0.95rem; }
+  .step-body { padding: 0 1.3rem 1.2rem 3.8rem; color: var(--muted); font-size: 0.88rem; font-weight: 300; }
+  .step-body strong { color: var(--text); font-weight: 600; }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+
+  .code-label {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 0.45rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .code-label::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent2);
+    opacity: 0.7;
+  }
+
+  pre {
+    padding: 1rem 1.2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    color: #c9d5f0;
+  }
+
+  .kw  { color: #7da4ff; }
+  .str { color: #00e5c0; }
+  .cmt { color: #4a5568; font-style: italic; }
+  .var { color: #ffd166; }
+  .cmd { color: #ff9a7b; }
+
+  /* ── INFO BOX ── */
+  .info-box {
+    background: rgba(79,125,255,0.06);
+    border: 1px solid rgba(79,125,255,0.2);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+    font-size: 0.87rem;
+    color: #9bb4e8;
+  }
+
+  .info-box.warn {
+    background: rgba(255,209,102,0.06);
+    border-color: rgba(255,209,102,0.2);
+    border-left-color: var(--accent4);
+    color: #e8d49b;
+  }
+
+  .info-box.success {
+    background: rgba(0,229,192,0.06);
+    border-color: rgba(0,229,192,0.2);
+    border-left-color: var(--accent2);
+    color: #9be8d8;
+  }
+
+  .info-box.danger {
+    background: rgba(255,107,107,0.06);
+    border-color: rgba(255,107,107,0.2);
+    border-left-color: var(--accent3);
+    color: #f0b0b0;
+  }
+
+  .info-box strong { color: inherit; font-weight: 700; }
+
+  /* ── FLOW ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.2rem 0;
+  }
+
+  .flow-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .flow-arrow { color: var(--muted); font-size: 1rem; }
+
+  /* ── FIELD TABLE ── */
+  .field-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+
+  .field-table table { width: 100%; border-collapse: collapse; }
+
+  .field-table th {
+    background: var(--surface2);
+    padding: 0.6rem 1.2rem;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .field-table td {
+    padding: 0.65rem 1.2rem;
+    font-size: 0.84rem;
+    border-bottom: 1px solid rgba(30,40,64,0.5);
+    vertical-align: top;
+  }
+
+  .field-table tr:last-child td { border-bottom: none; }
+  .field-table td:first-child { font-family: 'JetBrains Mono', monospace; color: var(--accent2); font-size: 0.8rem; width: 200px; }
+  .field-table td:nth-child(2) { color: var(--muted); font-size: 0.82rem; }
+  .field-table td:last-child  { font-family: 'JetBrains Mono', monospace; color: #7da4ff; font-size: 0.78rem; text-align: right; }
+
+  /* ── SIDEBAR PREVIEW ── */
+  .sidebar-preview {
+    background: #111e35;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+    display: inline-flex;
+    flex-direction: column;
+    min-width: 220px;
+  }
+
+  .sb-header {
+    background: #0d1627;
+    padding: 14px 18px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #e2e8f5;
+    border-bottom: 1px solid #1e2840;
+  }
+
+  .sb-item {
+    padding: 10px 18px;
+    font-size: 0.85rem;
+    color: #94a3b8;
+    border-bottom: 1px solid rgba(30,40,64,0.4);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .sb-item:last-child { border-bottom: none; }
+  .sb-item.active { color: #ffffff; background: rgba(79,125,255,0.12); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 3rem 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 3rem 0 4rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  footer .dot {
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--muted);
+    margin: 0 0.5rem;
+    vertical-align: middle;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    background: rgba(79,125,255,0.1);
+    border: 1px solid rgba(79,125,255,0.2);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    color: #9bb4ff;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 3rem;
+  }
+
+  .toc h3 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.9rem;
+  }
+
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem 2rem;
+  }
+
+  @media (max-width: 600px) { .toc-grid { grid-template-columns: 1fr; } }
+
+  .toc a {
+    font-size: 0.85rem;
+    color: var(--accent);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    transition: color 0.15s;
+  }
+
+  .toc a:hover { color: #a0bcff; }
+
+  .toc a::before {
+    content: '→';
+    color: var(--muted);
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  /* animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section { animation: fadeUp 0.5s ease both; }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.10s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+  .section:nth-child(5) { animation-delay: 0.20s; }
+  .section:nth-child(6) { animation-delay: 0.25s; }
+  .section:nth-child(7) { animation-delay: 0.30s; }
+  .section:nth-child(8) { animation-delay: 0.35s; }
+  .section:nth-child(9) { animation-delay: 0.40s; }
+  .section:nth-child(10) { animation-delay: 0.45s; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-glow"></div>
+    <div class="badge">🖥️ Documentación de la Aplicación</div>
+    <div class="logo-row">
+      <div class="logo-icon">🐳</div>
+    </div>
+    <h1>WordPress Utilidades<br><span>App de Escritorio</span></h1>
+    <p class="header-desc">Panel de control gráfico para gestionar entornos WordPress + Docker de forma local o remota, sin necesidad de ejecutar scripts en consola.</p>
+  </header>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>Contenidos</h3>
+    <div class="toc-grid">
+      <a href="#inicio">Pantalla de inicio — Modo Docker</a>
+      <a href="#layout">Interfaz general y barra lateral</a>
+      <a href="#contenedores">Pestaña Contenedores</a>
+      <a href="#volumes">Pestaña Volumes</a>
+      <a href="#perfiles">Pestaña Perfiles</a>
+      <a href="#networks">Pestaña Networks</a>
+      <a href="#historial">Pestaña Historial</a>
+      <a href="#logs">Pestaña Logs</a>
+      <a href="#setup">Asistente Crear / Recrear entorno</a>
+      <a href="#importar">Asistente Importar backup</a>
+      <a href="#exportar">Asistente Exportar backup</a>
+      <a href="#gestion">Gestión avanzada de contenedores</a>
+      <a href="#remote-config">Configurar daemon remoto y perfiles</a>
+      <a href="#modo-remoto">Cambiar modo Docker en caliente</a>
+    </div>
+  </div>
+
+  <!-- OVERVIEW CARDS -->
+  <div class="overview-grid">
+    <div class="ov-card">
+      <div class="icon">⚙️</div>
+      <div>
+        <h3>Crear / Recrear entorno</h3>
+        <p>Asistente para desplegar WordPress + MariaDB + phpMyAdmin desde cero con todos los parámetros configurables.</p>
+      </div>
+    </div>
+    <div class="ov-card">
+      <div class="icon">📦</div>
+      <div>
+        <h3>Contenedores</h3>
+        <p>Listado en tiempo real, arranque/parada individual o masiva, estado de salud y acceso rápido.</p>
+      </div>
+    </div>
+    <div class="ov-card">
+      <div class="icon">🗂️</div>
+      <div>
+        <h3>Perfiles</h3>
+        <p>Agrupa contenedores relacionados para arrancarlos o pararlos en un solo clic con un perfil guardado.</p>
+      </div>
+    </div>
+    <div class="ov-card">
+      <div class="icon">💾</div>
+      <div>
+        <h3>Volumes</h3>
+        <p>Gestión completa de volúmenes Docker: crear, inspeccionar, clonar, vaciar, eliminar y limpiar no usados.</p>
+      </div>
+    </div>
+    <div class="ov-card">
+      <div class="icon">🌐</div>
+      <div>
+        <h3>Networks</h3>
+        <p>Gestión completa de redes Docker: crear, eliminar, renombrar y conectar/desconectar contenedores.</p>
+      </div>
+    </div>
+    <div class="ov-card">
+      <div class="icon">📥</div>
+      <div>
+        <h3>Importar backup</h3>
+        <p>Asistente para restaurar wp-content + SQL en el entorno local con corrección automática de URLs.</p>
+      </div>
+    </div>
+    <div class="ov-card">
+      <div class="icon">📤</div>
+      <div>
+        <h3>Exportar backup</h3>
+        <p>Genera export.sql y carpeta wp-content lista para subir al hosting con cambio de URL incluido.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 00 INICIO -->
+  <div class="section" id="inicio">
+    <div class="section-header">
+      <span class="section-num">00</span>
+      <h2>Pantalla de inicio — Modo Docker</h2>
+      <span class="section-icon">🔌</span>
+    </div>
+
+    <p style="color:var(--muted);margin-bottom:1.2rem;font-size:0.9rem;">Al abrir la aplicación, antes de cargar la interfaz principal, aparece un diálogo de selección de modo. Esto determina contra qué daemon Docker se ejecutarán todas las operaciones.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num blue">1</span>
+          <span class="step-title">Modo local</span>
+        </div>
+        <div class="step-body">
+          Conecta con el <strong>Docker Desktop instalado en el mismo equipo</strong>. Sin configuración adicional. Si Docker Desktop no está activo al elegir este modo, la app intentará arrancarlo automáticamente y esperará hasta que responda.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header">
+          <span class="step-num green">2</span>
+          <span class="step-title">Modo remoto</span>
+        </div>
+        <div class="step-body">
+          Conecta a un <strong>Docker daemon en otro equipo</strong>. Al seleccionarlo aparecen dos opciones:<br><br>
+          • <strong>Lista LAN</strong>: hosts detectados automáticamente en la red local mediante ARP.<br>
+          • <strong>Manual</strong>: introduce una IP, dominio o URL completa. Formatos aceptados: <code>192.168.1.50</code>, <code>192.168.1.50:2375</code>, <code>mi-dominio.com</code>, <code>tcp://host:puerto</code>, <code>ssh://usuario@host</code>.
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box warn">
+      <strong>⚠️ Requisito modo remoto:</strong> El equipo destino debe tener el daemon Docker accesible por TCP/SSH (puerto <code>2375</code> sin TLS o <code>2376</code> con TLS). El firewall del equipo destino debe permitir la conexión entrante.
+    </div>
+
+    <div class="info-box">
+      <strong>💡 Cancelar:</strong> Si cierras el diálogo sin seleccionar modo, la aplicación se cierra limpiamente. Puedes cambiar de modo en cualquier momento desde el botón <strong>Cambiar modo Docker</strong> en el panel principal.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 01 LAYOUT -->
+  <div class="section" id="layout">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>Interfaz general y barra lateral</h2>
+      <span class="section-icon">🗺️</span>
+    </div>
+
+    <p style="color:var(--muted);margin-bottom:1.5rem;font-size:0.9rem;">La ventana principal se divide en dos zonas: una <strong style="color:var(--text)">barra lateral izquierda</strong> de navegación con acciones principales, y un <strong style="color:var(--text)">área de trabajo derecha</strong> con pestañas y paneles dinámicos.</p>
+
+    <div style="display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap;margin-bottom:1.5rem;">
+      <div class="sidebar-preview">
+        <div class="sb-header">🐳 Docker Tools</div>
+        <div class="sb-item active">⚙️  Crear / Recrear entorno</div>
+        <div class="sb-item">⬇️  Importar backup</div>
+        <div class="sb-item">⬆️  Exportar backup</div>
+        <div class="sb-item">▶️  Gestionar contenedores</div>
+        <div class="sb-item">≡  Documentación</div>
+        <div class="sb-item" style="color:#ef4444;">✕  Cerrar aplicación</div>
+      </div>
+      <div style="flex:1;min-width:260px;">
+        <div class="btn-list">
+          <div class="btn-item">
+            <span class="btn-name">⚙️ Crear / Recrear</span>
+            <span class="btn-desc">Abre el asistente completo de instalación del entorno Docker.</span>
+          </div>
+          <div class="btn-item">
+            <span class="btn-name">⬇️ Importar backup</span>
+            <span class="btn-desc">Abre el asistente para restaurar un backup en el entorno local.</span>
+          </div>
+          <div class="btn-item">
+            <span class="btn-name">⬆️ Exportar backup</span>
+            <span class="btn-desc">Genera un backup listo para subir al hosting de producción.</span>
+          </div>
+          <div class="btn-item">
+            <span class="btn-name">▶️ Gestionar contenedores</span>
+            <span class="btn-desc">Abre el gestor avanzado de contenedores con renombrar, borrar, arrancar y apagar.</span>
+          </div>
+          <div class="btn-item">
+            <span class="btn-name">≡ Documentación</span>
+            <span class="btn-desc">Abre la documentación de los scripts .bat en el navegador.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p style="color:var(--muted);font-size:0.88rem;">En la parte inferior de la barra lateral hay un <strong style="color:var(--text)">indicador de estado Docker</strong> (punto verde/rojo) con el texto del modo activo. En la cabecera del área de trabajo aparece el botón <strong style="color:var(--text)">Cambiar modo Docker</strong> y la marca de última actualización.</p>
+
+    <div class="info-box success">
+      <strong>✅ Pestañas dinámicas:</strong> Los asistentes (Crear, Importar, Exportar, Gestión avanzada) se abren como <strong>pestañas adicionales</strong> dentro del mismo panel de trabajo. Si ya están abiertas, hacen foco en ellas en lugar de abrirlas de nuevo.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 02 CONTENEDORES -->
+  <div class="section" id="contenedores">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>Pestaña Contenedores</h2>
+      <span class="section-icon">📦</span>
+    </div>
+
+    <div class="tab-card">
+      <div class="tab-card-header">
+        <span class="tab-label">Contenedores</span>
+        <span class="tab-card-title">Lista en tiempo real de todos los contenedores Docker</span>
+      </div>
+      <div class="tab-card-body">
+        <p>Muestra una tabla con <strong>todos los contenedores</strong> (arrancados y parados) del daemon activo. Se <strong>actualiza automáticamente</strong> cada 30 segundos. La selección se mantiene tras cada refresco.</p>
+        <p>Cada fila muestra: <strong>nombre</strong>, <strong>estado</strong> (con icono descriptivo: iniciando, corriendo, parado, etc.), y <strong>puertos</strong> mapeados.</p>
+      </div>
+    </div>
+
+    <div class="btn-list">
+      <div class="btn-item">
+        <span class="btn-name">Refrescar</span>
+        <span class="btn-desc">Fuerza una actualización inmediata del listado de contenedores.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Arrancar</span>
+        <span class="btn-desc">Arranca los contenedores seleccionados. Operación <strong>no bloqueante</strong>: la app sigue respondiendo y muestra un spinner mientras la acción se ejecuta en segundo plano.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Apagar</span>
+        <span class="btn-desc">Para los contenedores seleccionados. También funciona en segundo plano.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Arrancar todo</span>
+        <span class="btn-desc">Arranca todos los contenedores existentes de una sola vez.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Apagar todo</span>
+        <span class="btn-desc">Para todos los contenedores en ejecución.</span>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>💡 Selección múltiple:</strong> Puedes seleccionar varios contenedores con <code>Ctrl+clic</code> o <code>Shift+clic</code> para operar sobre todos a la vez con Arrancar / Apagar.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 03 VOLUMES -->
+  <div class="section" id="volumes">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>Pestaña Volumes</h2>
+      <span class="section-icon">💾</span>
+    </div>
+
+    <div class="tab-card">
+      <div class="tab-card-header">
+        <span class="tab-label">Volumes</span>
+        <span class="tab-card-title">Gestión de volúmenes Docker en modo local y remoto</span>
+      </div>
+      <div class="tab-card-body">
+        <p>Muestra todos los volumes del daemon activo con <strong>nombre</strong>, <strong>driver</strong>, <strong>scope</strong>, <strong>uso</strong> y <strong>mountpoint</strong>.</p>
+        <p>Al seleccionar un volume, la columna derecha muestra qué contenedores lo están usando. Si no hay ninguno, aparece como no usado.</p>
+      </div>
+    </div>
+
+    <div class="btn-list">
+      <div class="btn-item">
+        <span class="btn-name">Refrescar volumes</span>
+        <span class="btn-desc">Recarga el inventario de volumes y su uso real por contenedor.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Crear volume</span>
+        <span class="btn-desc">Crea un volume con el driver elegido (por defecto <code>local</code>).</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Inspeccionar</span>
+        <span class="btn-desc">Muestra el JSON de <code>docker volume inspect</code> para uno o varios volumes.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Clonar volume</span>
+        <span class="btn-desc">Crea un volume destino y copia todo el contenido desde el origen.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Vaciar volume</span>
+        <span class="btn-desc">Elimina todo el contenido de un volume sin borrar el volume en sí.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Eliminar volume</span>
+        <span class="btn-desc">Borra uno o varios volumes seleccionados (forzado) con confirmación previa.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Prune volumes</span>
+        <span class="btn-desc">Limpia volumes no usados. La app intenta <code>docker volume prune --all -f</code> y, si el daemon no soporta <code>--all</code>, hace fallback automático a <code>docker volume prune -f</code>.</span>
+      </div>
+    </div>
+
+    <div class="info-box warn">
+      <strong>⚠️ Nota importante sobre prune:</strong> un volume no se elimina si está referenciado por cualquier contenedor (incluso detenido). Si nunca estuvo asociado y no hay referencias, sí puede eliminarse en prune.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 04 PERFILES -->
+  <div class="section" id="perfiles">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>Pestaña Perfiles</h2>
+      <span class="section-icon">🗂️</span>
+    </div>
+
+    <div class="tab-card">
+      <div class="tab-card-header">
+        <span class="tab-label">Perfiles</span>
+        <span class="tab-card-title">Grupos de contenedores para operar en lote</span>
+      </div>
+      <div class="tab-card-body">
+        <p>Un <strong>perfil</strong> es un conjunto de contenedores con nombre personalizado. Permite arrancar o parar varios contenedores relacionados (por ejemplo WordPress + MariaDB + phpMyAdmin) en un solo clic.</p>
+        <p>La app soporta dos almacenes: <strong>privado</strong> (por usuario local en <code>%LOCALAPPDATA%\WordPressUtilidades\private_profiles.json</code>) y <strong>remoto</strong> (compartido en volumen Docker <code>wpu_profiles_remote</code> en <code>/data/profiles.json</code>).</p>
+      </div>
+    </div>
+
+    <div class="btn-list">
+      <div class="btn-item">
+        <span class="btn-name">Guardar / Actualizar</span>
+        <span class="btn-desc">Guarda el perfil con el nombre indicado y los contenedores marcados en la lista. Si ya existe, lo actualiza.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Eliminar</span>
+        <span class="btn-desc">Elimina el perfil seleccionado tras confirmación.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Quitar del perfil</span>
+        <span class="btn-desc">Quita del perfil actual los contenedores que selecciones en la lista de la derecha.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Copiar a remoto / privado</span>
+        <span class="btn-desc">Copia el perfil seleccionado al otro almacén. Si ya existe en destino, pide confirmación para sobrescribir.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Arrancar perfil</span>
+        <span class="btn-desc">Arranca todos los contenedores del perfil seleccionado en segundo plano.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Apagar perfil</span>
+        <span class="btn-desc">Para todos los contenedores del perfil seleccionado.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Refrescar perfiles</span>
+        <span class="btn-desc">Recarga la lista de perfiles desde el archivo .ini.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Limpiar selección</span>
+        <span class="btn-desc">Vacía el editor de perfil sin guardar cambios.</span>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>💡 Marcado visual:</strong> Al seleccionar un perfil, los contenedores que ya forman parte de él se muestran con la etiqueta <code>(En el perfil seleccionado)</code> para diferenciarlos al editar.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 05 NETWORKS -->
+  <div class="section" id="networks">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>Pestaña Networks</h2>
+      <span class="section-icon">🌐</span>
+    </div>
+
+    <div class="tab-card">
+      <div class="tab-card-header">
+        <span class="tab-label">Networks</span>
+        <span class="tab-card-title">Gestión completa de redes Docker</span>
+      </div>
+      <div class="tab-card-body">
+        <p>Lista todas las redes Docker del daemon activo con su <strong>nombre</strong>, <strong>driver</strong> (<code>bridge</code>, <code>host</code>, <code>overlay</code>…) y <strong>número de contenedores conectados</strong>.</p>
+        <p>Al seleccionar una red, el panel inferior muestra los contenedores ya conectados (lista informativa) y la lista de contenedores disponibles para conectar o desconectar.</p>
+      </div>
+    </div>
+
+    <div class="btn-list">
+      <div class="btn-item">
+        <span class="btn-name">Crear network</span>
+        <span class="btn-desc">Solicita nombre y driver— crea una nueva red Docker vacía.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Renombrar network</span>
+        <span class="btn-desc">Crea una red nueva con el nombre indicado, migra todos los contenedores y elimina la antigua.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Eliminar network</span>
+        <span class="btn-desc">Elimina la red seleccionada tras confirmación. Solo funciona si no tiene contenedores conectados.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Conectar</span>
+        <span class="btn-desc">Conecta uno o varios contenedores seleccionados de la lista de objetivos a la red activa. Soporta selección múltiple.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Desconectar</span>
+        <span class="btn-desc">Desconecta uno o varios contenedores seleccionados de la red activa.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 06 HISTORIAL -->
+  <div class="section" id="historial">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>Pestaña Historial</h2>
+      <span class="section-icon">📋</span>
+    </div>
+
+    <div class="tab-card">
+      <div class="tab-card-header">
+        <span class="tab-label">Historial</span>
+        <span class="tab-card-title">Registro de todas las operaciones realizadas</span>
+      </div>
+      <div class="tab-card-body">
+        <p>Muestra el contenido del archivo <code>historial_gestor.log</code>. Cada línea tiene el formato <code>[fecha hora] [NIVEL] Acción | Objetivo | Detalle</code>.</p>
+        <p>El scroll horizontal y vertical se <strong>mantiene en su posición</strong> al refrescar, para no perder el hilo de lectura.</p>
+      </div>
+    </div>
+
+    <div class="btn-list">
+      <div class="btn-item">
+        <span class="btn-name">Filtro por nivel</span>
+        <span class="btn-desc">Desplegable para ver solo líneas <code>OK</code>, <code>ERROR</code>, <code>INFO</code>, o <strong>TODOS</strong>.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Búsqueda de texto</span>
+        <span class="btn-desc">Campo de texto para filtrar líneas que contengan el término buscado (sin distinción de mayúsculas ni acentos).</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Refrescar</span>
+        <span class="btn-desc">Recarga el archivo de historial manteniendo los filtros activos y la posición de scroll.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Limpiar filtro</span>
+        <span class="btn-desc">Resetea el nivel a TODOS y vacía el campo de búsqueda.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Copiar visible</span>
+        <span class="btn-desc">Copia al portapapeles el texto actualmente visible (líneas filtradas).</span>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Formato de línea en historial_gestor.log</div>
+      <pre><span class="cmt">[DD/MM/AAAA HH:MM:SS] [NIVEL] Acción | Objetivo | Detalle</span>
+
+<span class="str">[16/03/2026 09:45:12] [OK]</span>    <span class="var">START</span>      | <span class="str">wordpress1</span> | Contenedor arrancado
+<span class="str">[16/03/2026 09:46:01] [ERROR]</span> <span class="var">EXPORT</span>     | <span class="str">wordpress1</span> | Fallo al generar export.sql
+<span class="str">[16/03/2026 09:47:33] [INFO]</span>  <span class="var">DOCKER</span>     | <span class="str">desktop</span>    | Docker Desktop iniciado automaticamente</pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 07 LOGS -->
+  <div class="section" id="logs">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>Pestaña Logs</h2>
+      <span class="section-icon">🔍</span>
+    </div>
+
+    <div class="tab-card">
+      <div class="tab-card-header">
+        <span class="tab-label">Logs</span>
+        <span class="tab-card-title">Visor de logs de contenedores Docker</span>
+      </div>
+      <div class="tab-card-body">
+        <p>Equivalente a <code>docker logs</code> dentro de la app. Permite ver un número configurable de líneas desde el final, con modos estático y en seguimiento (<code>-f</code>).</p>
+      </div>
+    </div>
+
+    <div class="btn-list">
+      <div class="btn-item">
+        <span class="btn-name">Contenedor</span>
+        <span class="btn-desc">Desplegable para elegir el contenedor del que visualizar los logs.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Nº líneas</span>
+        <span class="btn-desc">Número de líneas desde el final a mostrar (equivalente a <code>--tail N</code>). Por defecto <strong>100</strong>.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Ver logs</span>
+        <span class="btn-desc">Carga las últimas N líneas. El scroll vertical va al <strong>final</strong>, el horizontal al <strong>inicio (izquierda)</strong>.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Auto-refresco</span>
+        <span class="btn-desc">Checkbox que recarga los logs cada <strong>4 segundos</strong>. La posición de scroll x e y se <strong>preserva</strong> en cada ciclo.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Seguir (-f)</span>
+        <span class="btn-desc">Modo streaming en vivo (<code>docker logs -f</code>). Incompatible con Auto-refresco; desactivar uno activa el otro.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Exportar txt</span>
+        <span class="btn-desc">Guarda el contenido visible del visor en un archivo .txt a elección del usuario.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Copiar visible</span>
+        <span class="btn-desc">Copia al portapapeles el texto actualmente mostrado en el visor.</span>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>💡 Comportamiento del scroll:</strong> Al pulsar <strong>Ver logs</strong> la vista salta al final verticalmente pero comienza por la izquierda horizontalmente. Con <strong>Auto-refresco</strong> activo, ambas posiciones (x e y) se conservan para no interrumpir la lectura.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 08 SETUP -->
+  <div class="section" id="setup">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2>Asistente Crear / Recrear entorno</h2>
+      <span class="section-icon">⚙️</span>
+    </div>
+
+    <p style="color:var(--muted);margin-bottom:1.2rem;font-size:0.9rem;">Equivalente en GUI al script <code>docker_mariadb_wordpress.bat</code>. Despliega el entorno Docker completo con todos los parámetros configurables antes de ejecutar.</p>
+
+    <div class="info-box warn">
+      <strong>⚠️ Destructivo:</strong> Este asistente <strong>elimina y recrea</strong> los contenedores, volúmenes y red indicados. Cualquier dato no exportado previamente se perderá.
+    </div>
+
+    <div class="field-table">
+      <table>
+        <thead><tr><th>Campo</th><th>Descripción</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td>Contenedor WordPress</td><td>Nombre del contenedor que hospedará WordPress (Bitnami)</td><td>wordpress1</td></tr>
+          <tr><td>Contenedor MariaDB</td><td>Nombre del contenedor de la base de datos</td><td>mariadb1</td></tr>
+          <tr><td>Contenedor phpMyAdmin</td><td>Nombre del gestor web de base de datos</td><td>phpmyadmin1</td></tr>
+          <tr><td>Network Docker</td><td>Red privada que conecta los tres contenedores</td><td>wp-network1</td></tr>
+          <tr><td>Volumen WordPress</td><td>Volumen persistente para <code>/bitnami/wordpress</code></td><td>wpdata1</td></tr>
+          <tr><td>Volumen MariaDB</td><td>Volumen persistente para <code>/bitnami/mariadb</code></td><td>mariadbdata1</td></tr>
+          <tr><td>Puerto HTTP host</td><td>Puerto del host para acceder a WordPress por HTTP</td><td>8182</td></tr>
+          <tr><td>Puerto HTTPS host</td><td>Puerto del host para acceder a WordPress por HTTPS</td><td>8445</td></tr>
+          <tr><td>Puerto HTTP contenedor</td><td>Puerto interno de Bitnami WordPress para HTTP</td><td>8080</td></tr>
+          <tr><td>Puerto HTTPS contenedor</td><td>Puerto interno de Bitnami WordPress para HTTPS</td><td>8443</td></tr>
+          <tr><td>Puerto MariaDB</td><td>Puerto expuesto en el host para acceder a la BD</td><td>3307</td></tr>
+          <tr><td>Puerto phpMyAdmin</td><td>Puerto del host para phpMyAdmin</td><td>8181</td></tr>
+          <tr><td>IP en red local</td><td>IP del equipo en la red LAN (para URL alternativa)</td><td>192.168.200.51</td></tr>
+          <tr><td>Dominio producción</td><td>URL real del hosting (para search-replace inicial)</td><td>https://tudominio.com</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="color:var(--muted);font-size:0.88rem;margin:1rem 0;">Además de los campos anteriores hay una sección de <strong style="color:var(--text)">credenciales</strong> (usuario/contraseña WordPress, usuario/contraseña/nombre BD, contraseña root MariaDB) y opciones de comportamiento post-setup.</p>
+
+    <div class="steps" style="margin-top:1.2rem;">
+      <div class="step">
+        <div class="step-header"><span class="step-num red">1</span><span class="step-title">Limpieza del entorno anterior</span></div>
+        <div class="step-body">Para y elimina contenedores, volúmenes y red configurados.</div>
+      </div>
+      <div class="step">
+        <div class="step-header"><span class="step-num blue">2</span><span class="step-title">Creación de red y volúmenes</span></div>
+        <div class="step-body">Crea la red Docker privada y los dos volúmenes de persistencia.</div>
+      </div>
+      <div class="step">
+        <div class="step-header"><span class="step-num gold">3</span><span class="step-title">Arranque de MariaDB</span></div>
+        <div class="step-body">Lanza MariaDB con <code>bitnami/mariadb:latest</code> y espera a que acepte conexiones SQL.</div>
+      </div>
+      <div class="step">
+        <div class="step-header"><span class="step-num blue">4</span><span class="step-title">Preconfiguración de permisos</span></div>
+        <div class="step-body">Contenedor temporal root aplica <code>chmod/chown</code> al volumen WordPress para evitar errores Bitnami.</div>
+      </div>
+      <div class="step">
+        <div class="step-header"><span class="step-num green">5</span><span class="step-title">Arranque de WordPress</span></div>
+        <div class="step-body">Lanza WordPress con <code>bitnami/wordpress:latest</code> y espera respuesta HTTP en el puerto configurado.</div>
+      </div>
+      <div class="step">
+        <div class="step-header"><span class="step-num blue">6</span><span class="step-title">Configuración de URLs</span></div>
+        <div class="step-body"><code>wp search-replace</code> entre dominio de producción, <code>localhost:PUERTO</code> e IP de red local. Reinicia WordPress para aplicar.</div>
+      </div>
+      <div class="step">
+        <div class="step-header"><span class="step-num green">7</span><span class="step-title">Arranque de phpMyAdmin</span></div>
+        <div class="step-body">Despliega phpMyAdmin conectado a la misma red para administración web de la BD.</div>
+      </div>
+    </div>
+
+    <div class="info-box success" style="margin-top:1.2rem;">
+      <strong>✅ Al finalizar</strong> la app pregunta si quieres abrir el asistente de Importar backup directamente para restaurar datos sobre el entorno recién creado.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 09 IMPORTAR -->
+  <div class="section" id="importar">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2>Asistente Importar backup</h2>
+      <span class="section-icon">📥</span>
+    </div>
+
+    <p style="color:var(--muted);margin-bottom:1.2rem;font-size:0.9rem;">Restaura un backup WordPress en el entorno local. Acepta <code>wp-content</code> en tres formatos y aplica corrección automática de URLs tras la importación.</p>
+
+    <div class="flow">
+      <div class="flow-item">📁 Copiar wp-content</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">🗄️ Importar SQL</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">🔗 Corregir URL</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">🔄 Reiniciar WP</div>
+    </div>
+
+    <div class="field-table">
+      <table>
+        <thead><tr><th>Campo</th><th>Descripción</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td>Contenedor WordPress</td><td>Destino donde se restaurará wp-content</td><td>(detectado)</td></tr>
+          <tr><td>Contenedor DB</td><td>Contenedor MariaDB donde se importará el SQL</td><td>(detectado)</td></tr>
+          <tr><td>Usuario BD</td><td>Usuario con permisos sobre la base de datos destino</td><td>admin</td></tr>
+          <tr><td>Nombre BD</td><td>Base de datos que recibirá el SQL</td><td>wordpress</td></tr>
+          <tr><td>URL local</td><td>URL actual del entorno (<code>http://localhost:PUERTO</code>)</td><td>(autodetectado)</td></tr>
+          <tr><td>Dominio del backup</td><td>Dominio original del backup (para search-replace)</td><td>—</td></tr>
+          <tr><td>Ruta wp-content</td><td>Carpeta, .tar o .zip con el wp-content a importar</td><td>—</td></tr>
+          <tr><td>Archivo SQL</td><td>Fichero .sql con el volcado de la base de datos</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="color:var(--muted);font-size:0.88rem;margin:1rem 0;"><strong style="color:var(--text)">Formatos wp-content soportados:</strong></p>
+    <div class="btn-list">
+      <div class="btn-item"><span class="btn-name">Carpeta wp-content/</span><span class="btn-desc">Se copia directamente con <code>docker cp</code>.</span></div>
+      <div class="btn-item"><span class="btn-name">wp-content.tar</span><span class="btn-desc">Se copia al contenedor y se descomprime con <code>tar xf</code>.</span></div>
+      <div class="btn-item"><span class="btn-name">wp-content.zip</span><span class="btn-desc">Se copia al contenedor y se descomprime con <code>unzip</code>.</span></div>
+    </div>
+
+    <div class="info-box">
+      <strong>💡 Autodetección:</strong> La URL local se detecta automáticamente a partir de los puertos activos del contenedor WordPress seleccionado. Las credenciales de BD se intentan leer de las variables de entorno del contenedor MariaDB.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 10 EXPORTAR -->
+  <div class="section" id="exportar">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2>Asistente Exportar backup</h2>
+      <span class="section-icon">📤</span>
+    </div>
+
+    <p style="color:var(--muted);margin-bottom:1.2rem;font-size:0.9rem;">Genera un backup completo listo para desplegar en hosting. El proceso cambia la URL a producción antes de exportar y la restaura a local al terminar, incluso si hay errores. Siempre crea una <strong style="color:var(--text)">subcarpeta final con fecha y hora</strong> dentro de la carpeta base que elijas.</p>
+
+    <div class="flow">
+      <div class="flow-item">🔗 URL → producción</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">🗄️ mysqldump → SQL</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">📁 tar wp-content</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">🔄 URL → local</div>
+    </div>
+
+    <div class="field-table">
+      <table>
+        <thead><tr><th>Campo</th><th>Descripción</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td>Contenedor WordPress</td><td>Origen del wp-content a exportar</td><td>(detectado)</td></tr>
+          <tr><td>Contenedor DB</td><td>Origen del dump SQL</td><td>(detectado)</td></tr>
+          <tr><td>Usuario BD</td><td>Usuario con permisos de lectura en la BD</td><td>admin</td></tr>
+          <tr><td>Nombre BD</td><td>Base de datos a exportar</td><td>wordpress</td></tr>
+          <tr><td>URL local</td><td>URL actual del entorno local</td><td>(autodetectado)</td></tr>
+          <tr><td>Dominio de producción</td><td>Dominio real al que se subirá el backup</td><td>—</td></tr>
+          <tr><td>Carpeta base de salida</td><td>Directorio base elegido por el usuario</td><td>Desktop/wordpress-export</td></tr>
+          <tr><td>Carpeta final del export</td><td>Se crea automáticamente dentro de la base con formato <code>YYYY_MM_DD_HH-MM</code> (y sufijo si existe)</td><td>2026_03_17_09-40</td></tr>
+          <tr><td>Omitir cambio de URL</td><td>Checkbox para saltar el <code>search-replace</code> y exportar la BD tal cual</td><td>desmarcado</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Archivos generados en la carpeta final del export</div>
+      <pre><span class="var">carpeta-base-elegida/</span>
+  └── <span class="var">YYYY_MM_DD_HH-MM/</span>
+  ├── <span class="str">export.sql</span>        <span class="cmt">← Importar en phpMyAdmin del hosting</span>
+  ├── <span class="str">wp-content/</span>       <span class="cmt">← Subir por FTP a public_html/wp-content</span>
+  └── <span class="str">wp-content.tar</span>    <span class="cmt">← Copia comprimida alternativa</span></pre>
+    </div>
+
+    <div class="info-box warn">
+      <strong>⚠️ Importante:</strong> Tanto Importar como Exportar muestran una <strong>barra de progreso</strong> con estado paso a paso. Hay un botón <strong>Cancelar</strong> para interrumpir la operación de forma limpia. Si el contenedor está parado al iniciar, la app lo arrancará automáticamente.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 11 GESTION -->
+  <div class="section" id="gestion">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <h2>Gestión avanzada de contenedores</h2>
+      <span class="section-icon">🛠️</span>
+    </div>
+
+    <p style="color:var(--muted);margin-bottom:1.2rem;font-size:0.9rem;">Se abre desde la barra lateral con <strong style="color:var(--text)">▶ Gestionar contenedores</strong>. Ofrece operaciones de mantenimiento que van más allá del arranque/parada cotidiano.</p>
+
+    <div class="tab-card">
+      <div class="tab-card-header">
+        <span class="tab-label">Gestión avanzada</span>
+        <span class="tab-card-title">Tabla de todos los contenedores con nombre, estado, imagen y puertos</span>
+      </div>
+      <div class="tab-card-body">
+        <p>Muestra <strong>nombre</strong>, <strong>estado</strong>, <strong>imagen Docker</strong> y <strong>puertos mapeados</strong> de cada contenedor. Permite seleccionar uno y ejecutar acciones sobre él.</p>
+      </div>
+    </div>
+
+    <div class="btn-list">
+      <div class="btn-item">
+        <span class="btn-name">Refrescar</span>
+        <span class="btn-desc">Recarga la tabla de contenedores del gestor avanzado.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Renombrar</span>
+        <span class="btn-desc">Pide un nombre nuevo y ejecuta <code>docker rename</code> sobre el contenedor seleccionado.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Borrar</span>
+        <span class="btn-desc">Elimina el contenedor con <code>docker rm -f</code> (fuerza parada si está corriendo). Solicita confirmación previa.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Arrancar</span>
+        <span class="btn-desc">Arranca el contenedor seleccionado.</span>
+      </div>
+      <div class="btn-item">
+        <span class="btn-name">Apagar</span>
+        <span class="btn-desc">Para el contenedor seleccionado.</span>
+      </div>
+    </div>
+
+    <div class="info-box danger">
+      <strong>🚨 Borrar es permanente:</strong> Elimina el contenedor incluyendo sus datos no persistidos en volúmenes. Los volúmenes asociados no se eliminan automáticamente.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 12 REMOTE CONFIG -->
+  <div class="section" id="remote-config">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <h2>Configurar daemon remoto y perfiles compartidos</h2>
+      <span class="section-icon">🌐</span>
+    </div>
+
+    <p style="color:var(--muted);margin-bottom:1.2rem;font-size:0.9rem;">Si vas a trabajar en <strong style="color:var(--text)">modo remoto</strong>, debes preparar dos cosas: exponer el daemon Docker del servidor y crear el volumen compartido donde la app guarda perfiles remotos.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-header"><span class="step-num blue">1</span><span class="step-title">Exponer daemon Docker en el equipo remoto</span></div>
+        <div class="step-body">Habilita acceso remoto por TCP (2375/2376) o usa SSH. Debes permitir el puerto en firewall para que el cliente pueda conectar.</div>
+      </div>
+      <div class="step">
+        <div class="step-header"><span class="step-num gold">2</span><span class="step-title">Probar conectividad desde el cliente</span></div>
+        <div class="step-body">Comprueba con <code>Test-NetConnection</code> que el host remoto responde antes de abrir la app.</div>
+      </div>
+      <div class="step">
+        <div class="step-header"><span class="step-num green">3</span><span class="step-title">Crear volumen remoto de perfiles</span></div>
+        <div class="step-body">Crea el volumen <code>wpu_profiles_remote</code> en el daemon remoto donde quedará <code>/data/profiles.json</code>.</div>
+      </div>
+      <div class="step">
+        <div class="step-header"><span class="step-num blue">4</span><span class="step-title">Inicializar y validar profiles.json</span></div>
+        <div class="step-body">Escribe el JSON base y verifica su contenido antes de usar el almacén remoto en la pestaña Perfiles.</div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Windows remoto (Docker Desktop) - exponer 2375/2376 a LAN</div>
+      <pre><span class="cmd">netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=2375 connectaddress=127.0.0.1 connectport=2375</span>
+<span class="cmd">netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=2376 connectaddress=127.0.0.1 connectport=2375</span>
+<span class="cmd">New-NetFirewallRule -DisplayName "Docker API 2375" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 2375</span>
+<span class="cmd">New-NetFirewallRule -DisplayName "Docker API 2376" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 2376</span></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Linux remoto (Docker Engine) - daemon.json + firewall</div>
+      <pre><span class="cmt"># /etc/docker/daemon.json</span>
+{
+  <span class="str">"hosts"</span>: [
+    <span class="str">"unix:///var/run/docker.sock"</span>,
+    <span class="str">"tcp://0.0.0.0:2375"</span>,
+    <span class="str">"tcp://[::]:2375"</span>,
+    <span class="str">"tcp://0.0.0.0:2376"</span>,
+    <span class="str">"tcp://[::]:2376"</span>
+  ]
+}
+
+<span class="cmd">sudo systemctl restart docker</span>
+<span class="cmd">sudo ufw allow 2375/tcp</span>
+<span class="cmd">sudo ufw allow 2376/tcp</span></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Cliente PowerShell - crear e inicializar volumen remoto de perfiles</div>
+      <pre><span class="cmd">docker volume create wpu_profiles_remote</span>
+
+<span class="var">$json</span> = <span class="str">'{"version":1,"updated_at":"","updated_by":"","profiles":{}}'</span>
+<span class="var">$tmp</span> = <span class="cmd">Join-Path $env:TEMP 'profiles.json'</span>
+<span class="cmd">Set-Content -Path $tmp -Value $json -Encoding UTF8</span>
+<span class="cmd">Get-Content $tmp -Raw | docker run --rm -i -v wpu_profiles_remote:/data alpine sh -c "cat &gt; /data/profiles.json"</span>
+
+<span class="cmd">docker run --rm -v wpu_profiles_remote:/data alpine cat /data/profiles.json</span>
+<span class="cmd">docker run --rm -v wpu_profiles_remote:/data alpine cat /data/profiles.json | ConvertFrom-Json</span></pre>
+    </div>
+
+    <div class="info-box warn">
+      <strong>⚠️ Seguridad:</strong> El puerto <code>2375</code> no usa TLS. Empléalo solo en redes de confianza. Para entornos sensibles, usa <code>ssh://usuario@host</code> o <code>2376</code> con TLS real.
+    </div>
+
+    <div class="info-box success">
+      <strong>✅ En la app:</strong> entra en pestaña <strong>Perfiles</strong>, cambia <strong>Almacen</strong> a <strong>remoto</strong> y ya podrás crear/editar perfiles compartidos para todos los clientes conectados al mismo daemon.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 13 MODO REMOTO -->
+  <div class="section" id="modo-remoto">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <h2>Cambiar modo Docker en caliente</h2>
+      <span class="section-icon">🔌</span>
+    </div>
+
+    <p style="color:var(--muted);margin-bottom:1.2rem;font-size:0.9rem;">No es necesario reiniciar la app para cambiar de daemon Docker. El botón <strong style="color:var(--text)">Cambiar modo Docker</strong> en el panel principal abre el mismo selector de conexión visto al iniciar, pero con el modo actual preseleccionado.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-header"><span class="step-num blue">1</span><span class="step-title">Abrir el selector</span></div>
+        <div class="step-body">Pulsa <strong>Cambiar modo Docker</strong> en la cabecera. Aparece el diálogo con el modo actual ya marcado y el host anterior en el campo manual si había uno.</div>
+      </div>
+      <div class="step">
+        <div class="step-header"><span class="step-num gold">2</span><span class="step-title">Seleccionar o modificar</span></div>
+        <div class="step-body">Cambia a local, elige otro host LAN de la lista o escribe un nuevo host manual. Pulsa <strong>Continuar</strong>.</div>
+      </div>
+      <div class="step">
+        <div class="step-header"><span class="step-num green">3</span><span class="step-title">Refresco automático</span></div>
+        <div class="step-body">Si el modo o el host han cambiado, la app refrescará automáticamente contenedores, redes y perfiles del nuevo daemon. El evento queda registrado en el historial.</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>💡 Sin cambios:</strong> Si confirmas con el mismo modo y host que antes, no se produce ningún refresco ni registro en historial.
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Formatos de host remoto aceptados</div>
+      <pre><span class="str">192.168.1.50</span>            <span class="cmt">→ tcp://192.168.1.50:2375</span>
+<span class="str">192.168.1.50:2375</span>       <span class="cmt">→ tcp://192.168.1.50:2375</span>
+<span class="str">servidor.local</span>          <span class="cmt">→ tcp://servidor.local:2375</span>
+<span class="str">tcp://host:2376</span>         <span class="cmt">→ tcp://host:2376  (sin cambios)</span>
+<span class="str">ssh://user@192.168.1.50</span> <span class="cmt">→ ssh://user@192.168.1.50</span></pre>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>WordPress Utilidades App<span class="dot"></span>Python + Tkinter + Docker CLI<span class="dot"></span>Windows</p>
+  </footer>
+
+</div>
+</body>
+</html>
