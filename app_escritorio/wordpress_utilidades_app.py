@@ -660,10 +660,37 @@ class WordPressUtilitiesApp:
                         _kb = kb
                         ui(lambda k=_kb: status_var.set(f"Descargando... {k} KB"))
 
+                if total > 0 and downloaded != total:
+                    raise RuntimeError(
+                        f"Descarga incompleta ({downloaded} de {total} bytes)."
+                    )
+
             # Verificación mínima: que el archivo no esté vacío
             size = os.path.getsize(tmp_path)
             if size < 100:
                 raise RuntimeError("El archivo descargado parece incompleto o inválido.")
+
+            # Validaciones de integridad según tipo de actualización.
+            if _is_frozen_app():
+                # Un ejecutable PE en Windows debe iniciar con bytes MZ.
+                with open(tmp_path, "rb") as fh:
+                    magic = fh.read(2)
+                if magic != b"MZ":
+                    raise RuntimeError(
+                        "El archivo descargado no parece un .exe válido (firma PE inválida)."
+                    )
+            else:
+                # Para modo script, validar que el contenido sea texto Python razonable.
+                with open(tmp_path, "rb") as fh:
+                    head = fh.read(4096)
+                try:
+                    head_text = head.decode("utf-8", errors="ignore")
+                except Exception:
+                    head_text = ""
+                if not any(tok in head_text for tok in ("import ", "def ", "class ", "#")):
+                    raise RuntimeError(
+                        "El archivo descargado no parece un script Python válido."
+                    )
 
             ui(lambda: progress_var.set(100))
             ui(lambda: status_var.set("Descarga completada. Aplicando actualización..."))
