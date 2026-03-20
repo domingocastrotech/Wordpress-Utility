@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build and packaging artifacts
+build/
+dist/
+app_escritorio/dist/
+*.egg-info/
+*.spec.bak
+*.exe
+*.lnk
+
+# PyInstaller caches and outputs
+*.toc
+*.pyz
+warn-*.txt
+xref-*.html
+localpycs/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs and temp files
+*.log
+historial_gestor.log
+*.tmp
+*.temp
+
+# Keep source code, docs and scripts versioned
+!*.py
+!*.spec
+!*.md
+!*.html
+!*.json
+!*.bat
