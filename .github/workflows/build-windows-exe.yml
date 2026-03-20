@@ -1,0 +1,52 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+
+      - name: Build EXE with PyInstaller
+        working-directory: app_escritorio
+        run: |
+          pyinstaller --noconfirm wordpress_utilidades_app.spec
+
+      - name: Upload CI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Wordpress_Utilidades_${{ github.ref_name }}
+          path: app_escritorio/dist/Wordpress_Utilidades.exe
+          if-no-files-found: error
+
+      - name: Publish EXE to GitHub Release (tag pushes)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          files: app_escritorio/dist/Wordpress_Utilidades.exe
+          fail_on_unmatched_files: true
+          generate_release_notes: true
