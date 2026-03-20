@@ -53,8 +53,16 @@ jobs:
 
       - name: Create and push tag
         if: steps.exists.outputs.exists == 'false'
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
+          if [ -z "$GH_PAT" ]; then
+            echo "Falta el secret GH_PAT en el repositorio."
+            echo "Crea un PAT con permiso contents:write y guardalo como GH_PAT."
+            exit 1
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/${GITHUB_REPOSITORY}.git"
           git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
           git push origin "${{ steps.version.outputs.tag }}"
