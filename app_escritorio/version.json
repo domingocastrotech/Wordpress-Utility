@@ -1,7 +1,7 @@
 {
-  "version": "1.0.2",
-  "download_url_exe": "https://github.com/domingocastrotech/Wordpress-Utility/releases/download/v1.0.2/Wordpress_Utilidades.exe",
+  "version": "1.0.3",
+  "download_url_exe": "https://github.com/domingocastrotech/Wordpress-Utility/releases/download/v1.0.3/Wordpress_Utilidades.exe",
   "download_url_py": "https://raw.githubusercontent.com/domingocastrotech/Wordpress-Utility/main/app_escritorio/wordpress_utilidades_app.py",
   "download_url": "https://raw.githubusercontent.com/domingocastrotech/Wordpress-Utility/main/app_escritorio/wordpress_utilidades_app.py",
-  "notes": "Testeando actualización automática"
+  "notes": "Testeando actualización automática y agregado texto version"
 }

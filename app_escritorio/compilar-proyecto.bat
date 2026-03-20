@@ -35,15 +35,47 @@ if errorlevel 1 (
 )
 
 echo [INFO] Compilando proyecto con wordpress_utilidades_app.spec...
-"%PYTHON_EXE%" -m PyInstaller --noconfirm "wordpress_utilidades_app.spec"
+"%PYTHON_EXE%" -m PyInstaller --noconfirm --clean "wordpress_utilidades_app.spec"
 if errorlevel 1 (
   echo [ERROR] Compilacion fallida.
   popd >nul 2>&1
   exit /b 1
 )
 
+set "EXE_PATH=%SCRIPT_DIR%dist\Wordpress_Utilidades.exe"
+if not exist "%EXE_PATH%" (
+  REM A veces antivirus/indexador retiene temporalmente el archivo.
+  set "_TRIES=0"
+  :WAIT_EXE
+  if exist "%EXE_PATH%" goto EXE_FOUND
+  set /a _TRIES+=1
+  if %_TRIES% GEQ 6 goto TRY_ALT
+  timeout /t 1 /nobreak >nul
+  goto WAIT_EXE
+)
+
+:TRY_ALT
+if not exist "%EXE_PATH%" (
+  REM Nombre alternativo si cambia el spec en el futuro.
+  if exist "%SCRIPT_DIR%dist\wordpress_utilidades_app.exe" (
+    set "EXE_PATH=%SCRIPT_DIR%dist\wordpress_utilidades_app.exe"
+  ) else (
+    echo [ERROR] PyInstaller finalizo, pero no se encontro el ejecutable esperado en dist.
+    echo [ERROR] Revisa el nombre definido en "name=" dentro de wordpress_utilidades_app.spec.
+    echo [INFO] Contenido actual de dist:
+    dir "%SCRIPT_DIR%dist" /a
+    echo [INFO] Si aparece y desaparece, revisa cuarentena del antivirus/Defender.
+    popd >nul 2>&1
+    exit /b 1
+  )
+)
+
+:EXE_FOUND
+
 echo [OK] Compilacion completada.
-echo [OK] Ejecutable: "%SCRIPT_DIR%dist\Wordpress_Utilidades.exe"
+echo [OK] Ejecutable: "%EXE_PATH%"
+echo [INFO] Archivos en dist:
+dir "%SCRIPT_DIR%dist" /a
 
 popd >nul 2>&1
 exit /b 0

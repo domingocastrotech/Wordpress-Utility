@@ -24,7 +24,7 @@ from typing import Callable
 # ──────────────────────────────────────────────────────────────────────────────
 #  VERSIÓN Y ACTUALIZACIÓN AUTOMÁTICA
 # ──────────────────────────────────────────────────────────────────────────────
-APP_VERSION = "1.0.2"  # <-- actualiza este valor en cada release
+APP_VERSION = "1.0.3"  # <-- actualiza este valor en cada release
 
 # URL pública donde publicas tu version.json (GitHub raw, servidor propio, etc.)
 # Ejemplo GitHub: "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/version.json"
@@ -823,6 +823,13 @@ class WordPressUtilitiesApp:
         hdr.grid(row=0, column=0, sticky="ew")
         tk.Label(hdr, text="Panel de control", fg="#0b2a3f", bg="#ffffff",
                  font=("Segoe UI Semibold", 15)).pack(side="left")
+        tk.Label(
+            hdr,
+            text=f"Version: {APP_VERSION}",
+            fg="#6b7f93",
+            bg="#ffffff",
+            font=("Segoe UI", 9),
+        ).pack(side="left", padx=(10, 0))
         self.connection_mode_badge = tk.Label(
             hdr,
             textvariable=self.connection_mode_var,
