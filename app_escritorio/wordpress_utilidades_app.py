@@ -24,7 +24,7 @@ from typing import Callable
 # ──────────────────────────────────────────────────────────────────────────────
 #  VERSIÓN Y ACTUALIZACIÓN AUTOMÁTICA
 # ──────────────────────────────────────────────────────────────────────────────
-APP_VERSION = "1.1.3"  # <-- actualiza este valor en cada release
+APP_VERSION = "1.1.4"  # <-- actualiza este valor en cada release
 
 # URL pública donde publicas tu version.json (GitHub raw, servidor propio, etc.)
 # Ejemplo GitHub: "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/version.json"
@@ -178,14 +178,6 @@ $pct.Text = '0%'
 $pct.Font = New-Object System.Drawing.Font('Segoe UI', 9)
 $form.Controls.Add($pct)
 
-$launchBtn = New-Object System.Windows.Forms.Button
-$launchBtn.Size = New-Object System.Drawing.Size(160, 30)
-$launchBtn.Location = New-Object System.Drawing.Point(318, 136)
-$launchBtn.Text = 'Lanzar aplicación'
-$launchBtn.Enabled = $false
-$launchBtn.Font = New-Object System.Drawing.Font('Segoe UI', 9)
-$form.Controls.Add($launchBtn)
-
 $closeBtn = New-Object System.Windows.Forms.Button
 $closeBtn.Size = New-Object System.Drawing.Size(120, 30)
 $closeBtn.Location = New-Object System.Drawing.Point(18, 136)
@@ -236,18 +228,16 @@ if ($copied) {{
     }}
     Remove-Item -LiteralPath $newFile -Force -ErrorAction SilentlyContinue
 
-    Set-Ui 100 'Instalación finalizada. Pulsa "Lanzar aplicación".'
-    $launchBtn.Enabled = $true
-    $launchBtn.Add_Click({{
-        try {{
-            if ($restartArgs.Count -gt 0) {{
-                Start-Process -FilePath $restartExe -ArgumentList $restartArgs | Out-Null
-            }} else {{
-                Start-Process -FilePath $restartExe | Out-Null
-            }}
-        }} catch {{}}
-        $form.Close()
-    }})
+    Set-Ui 100 'Instalación finalizada. Reiniciando aplicación...'
+    Start-Sleep -Milliseconds 600
+    try {{
+        if ($restartArgs.Count -gt 0) {{
+            Start-Process -FilePath $restartExe -ArgumentList $restartArgs | Out-Null
+        }} else {{
+            Start-Process -FilePath $restartExe | Out-Null
+        }}
+    }} catch {{}}
+    $form.Close()
 }} else {{
     [System.Windows.Forms.MessageBox]::Show(
         'No se pudo reemplazar el archivo porque sigue en uso. Cierra la app y vuelve a intentar.',
