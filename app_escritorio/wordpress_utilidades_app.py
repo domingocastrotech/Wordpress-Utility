@@ -3162,11 +3162,11 @@ class WordPressUtilitiesApp:
         token = f"{name} {image}".lower()
         name_l = name.lower()
 
-        if "phpmyadmin" in token:
+        if "phpmyadmin" in token or "php-myadmin" in token:
             return "Contenedor de phpMyAdmin"
 
-        db_pattern = r"(^|[_\-.])(db|mariadb|mysql)([_\-.]|$)"
-        if re.search(db_pattern, name_l) or "mariadb" in token or "mysql" in token:
+        db_pattern = r"(^|[_\-.])(db|mariadb|mysql|postgres|postgresql)([_\-.]|$)"
+        if re.search(db_pattern, name_l) or any(word in token for word in ("mariadb", "mysql", "postgres", "postgresql")):
             return "Contenedor de DB"
 
         if "wordpress" in token:
@@ -3288,7 +3288,7 @@ class WordPressUtilitiesApp:
                 self._stop_container_loading_spinner()
             return
 
-        rows: list[tuple[str, str, str, str, str]] = []
+        rows_all: list[tuple[str, str, str, str, str]] = []
         for line in out.splitlines():
             parts = line.split("|", 4)
             if len(parts) < 5:
@@ -3312,11 +3312,17 @@ class WordPressUtilitiesApp:
                 health = "\u21bb Starting"
 
             port = self.extract_port(ports) if state == "ARRANCADO" else "-"
-            rows.append((name, state, health, port, image))
+            rows_all.append((name, state, health, port, image))
 
-        self.container_cache = [row[0] for row in rows]
-        self.container_image_cache = {row[0]: row[4] for row in rows}
+        self.container_cache = [row[0] for row in rows_all]
+        self.container_image_cache = {row[0]: row[4] for row in rows_all}
         self._stop_container_loading_spinner()
+
+        rows = [
+            row
+            for row in rows_all
+            if row[1] == "ARRANCADO" or self._container_service_label(row[0], row[4]) is not None
+        ]
 
         display_rows: list[tuple[str, tuple[str, str, str, str, str], tuple[str, ...]]] = []
         for row in rows:
@@ -4723,7 +4729,14 @@ class WordPressUtilitiesApp:
         if not self.docker_ready():
             messagebox.showerror("Docker", self._docker_unavailable_message())
             return
-        protected = {self.remote_history_volume, self.remote_profiles_volume}
+        protected_exact = {self.remote_history_volume, self.remote_profiles_volume}
+        protected_patterns = ("_history_remote", "_profiles_remote")
+
+        def is_protected_volume(name: str) -> bool:
+            lower_name = name.lower()
+            if name in protected_exact:
+                return True
+            return any(pattern in lower_name for pattern in protected_patterns)
 
         code, out, err = self._run(["docker", "volume", "ls", "--format", "{{.Name}}"])
         if code != 0:
@@ -4755,20 +4768,21 @@ class WordPressUtilitiesApp:
             for vname in [x.strip() for x in out_i.split() if x.strip()]:
                 used_volumes.add(vname)
 
-        removable = [v for v in all_volumes if v not in protected and v not in used_volumes]
+        protected_always = [v for v in all_volumes if is_protected_volume(v)]
+        removable = [v for v in all_volumes if not is_protected_volume(v) and v not in used_volumes]
 
         if not removable:
             messagebox.showinfo(
                 "Volumes",
                 "No hay volumes sin uso para eliminar.\n\n"
-                f"Protegidos siempre: {self.remote_history_volume}, {self.remote_profiles_volume}",
+                "Protegidos siempre: nombres que contengan _history_remote o _profile_remote",
             )
             return
 
         if not messagebox.askyesno(
             "Volumes",
             "Eliminar volumes sin uso?\n\n"
-            f"Se protegeran siempre: {self.remote_history_volume}, {self.remote_profiles_volume}\n\n"
+            "Se protegeran siempre: nombres que contengan _history_remote o _profile_remote\n\n"
             f"Se intentaran eliminar {len(removable)} volume(s).",
         ):
             return
@@ -4783,7 +4797,7 @@ class WordPressUtilitiesApp:
                 errors.append(f"{vname}: {err_rm or 'error'}")
 
         detail = (
-            f"Eliminados={len(removed)}; protegidos={len([v for v in all_volumes if v in protected])}; "
+            f"Eliminados={len(removed)}; protegidos={len(protected_always)}; "
             f"en uso={len(used_volumes)}"
         )
         if errors:
@@ -4799,7 +4813,7 @@ class WordPressUtilitiesApp:
                 "Volumes",
                 "Prune parcial completado.\n\n"
                 f"Eliminados: {len(removed)}\n"
-                f"Protegidos: {self.remote_history_volume}, {self.remote_profiles_volume}\n\n"
+                "Protegidos: nombres que contengan _history_remote o _profile_remote\n\n"
                 "Errores:\n" + "\n".join(errors),
             )
             return
@@ -4808,7 +4822,7 @@ class WordPressUtilitiesApp:
             "Volumes",
             "Prune completado.\n\n"
             f"Eliminados: {len(removed)}\n"
-            f"Protegidos: {self.remote_history_volume}, {self.remote_profiles_volume}",
+            "Protegidos: nombres que contengan _history_remote o _profile_remote",
         )
 
     def clone_volume(self) -> None:
@@ -7908,11 +7922,13 @@ class WordPressUtilitiesApp:
                 if os.path.isdir(local_path):
                     for root, _dirs, files in os.walk(local_path):
                         rel_root = os.path.relpath(root, local_path)
-                        base_arc = target_name if rel_root == "." else f"{target_name}/{rel_root.replace('\\', '/')}"
+                        rel_root_unix = rel_root.replace("\\", "/")
+                        base_arc = target_name if rel_root == "." else f"{target_name}/{rel_root_unix}"
                         for name in files:
                             file_path = os.path.join(root, name)
                             rel_file = name if rel_root == "." else f"{rel_root}/{name}"
-                            arcname = f"{target_name}/{rel_file.replace('\\', '/')}"
+                            rel_file_unix = rel_file.replace("\\", "/")
+                            arcname = f"{target_name}/{rel_file_unix}"
                             try:
                                 file_size = os.path.getsize(file_path)
                             except OSError:

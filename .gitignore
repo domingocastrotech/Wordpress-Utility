@@ -43,3 +43,5 @@ historial_gestor.log
 !*.html
 !*.json
 !*.bat
+utilidades.code-workspace
+app_escritorio/wordpress_utilidades_app_backup.py
